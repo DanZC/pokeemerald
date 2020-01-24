@@ -67,6 +67,20 @@ extern u8 gDexCryScreenState;
 extern struct MusicPlayerInfo* gMPlay_PokemonCry;
 extern struct MusicPlayerInfo gMPlayInfo_BGM;
 
+static const struct WindowTemplate sSoundCheckTextWindow[] =
+{
+    {
+        .bg = 0,
+        .tilemapLeft = 3,
+        .tilemapTop = 15,
+        .width = 26,
+        .height = 4,
+        .paletteNum = 15,
+        .baseBlock = 11,
+    },
+    DUMMY_WIN_TEMPLATE
+};
+
 void Task_InitSoundCheckMenu(u8);
 void sub_80BA384(u8);
 void sub_80BA65C(u8);
@@ -86,6 +100,8 @@ void sub_80BB1D4(void);
 void Task_InitCryTest(u8);
 void Task_ProcessCryTestInput(u8);
 void PrintCryNumber(void);
+
+static void InitSoundCheckScreenWindows(void);
 
 void CB2_SoundCheckMenu(void)
 {
@@ -131,8 +147,9 @@ void CB2_StartSoundCheckMenu(void)
     ResetPaletteFade();
     ResetTasks();
     ResetSpriteData();
-    Text_LoadWindowTemplate(&gWindowTemplate_81E6C3C);
-    InitMenuWindow(&gMenuTextWindowTemplate);
+    //Text_LoadWindowTemplate(&gWindowTemplate_81E6C3C);
+    //InitMenuWindow(&gMenuTextWindowTemplate);
+    InitSoundCheckScreenWindows();
     BeginNormalPaletteFade(0xFFFFFFFF, 0, 16, 0, RGB(0, 0, 0));
     REG_WIN0H = WIN_RANGE(0, 0);
     REG_WIN0V = WIN_RANGE(0, 0);
@@ -1298,5 +1315,13 @@ void Task_ProcessCryTestInput(u8 taskId)
 void PrintCryNumber(void)
 {
     PrintSignedNumber(gSoundTestCryNum, 1, 17, 3);
+}
+
+static void InitSoundCheckScreenWindows(void)
+{
+    InitWindows(sSoundCheckTextWindow);
+    DeactivateAllTextPrinters();
+    FillWindowPixelBuffer(0, PIXEL_FILL(0));
+    LoadWindowGfx(0, 0, 2, 224);
     LoadPalette(gUnknown_0860F074, 0xF0, 0x20);
 }
