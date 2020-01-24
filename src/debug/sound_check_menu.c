@@ -6,9 +6,11 @@
 #include "main.h"
 #include "text.h"
 #include "menu.h"
+#include "text_window.h"
 #include "constants/songs.h"
 #include "title_screen.h"
 #include "sound.h"
+#include "window.h"
 #include "pokedex_cry_screen.h"
 
 // local task defines
@@ -61,8 +63,8 @@ u16 gSoundTestCryNum;
 //IWRAM common
 extern u8 gDexCryScreenState;
 
-struct MusicPlayerInfo *gUnknown_03005D30;
-
+//struct MusicPlayerInfo *gUnknown_3005D30;
+extern struct MusicPlayerInfo* gMPlay_PokemonCry;
 extern struct MusicPlayerInfo gMPlayInfo_BGM;
 
 void Task_InitSoundCheckMenu(u8);
@@ -438,7 +440,7 @@ void Task_DrawDriverTestMenu(u8 taskId) // Task_DrawDriverTestMenu
     sDriverTestSelection = 0;
     gUnknown_020387B1 = 0;
     gUnknown_020387B2 = 0;
-    gUnknown_03005D30 = NULL;
+    gMPlay_PokemonCry = NULL;
     gUnknown_020387D8 = 0;
     gUnknown_020387D9 = 1;
     sSoundTestParams[CRY_TEST_VOICE] = 0;
@@ -541,35 +543,35 @@ void Task_ProcessDriverTestInput(u8 taskId)
         {
         case 0:
             if (gUnknown_020387D8)
-                gUnknown_03005D30 = SetPokemonCryTone(&gCryTable2[(128 * 0) + remaining]);
+                gMPlay_PokemonCry = SetPokemonCryTone(&gCryTable2[(128 * 0) + remaining]);
             else
-                gUnknown_03005D30 = SetPokemonCryTone(&gCryTable[(128 * 0) + remaining]);
+                gMPlay_PokemonCry = SetPokemonCryTone(&gCryTable[(128 * 0) + remaining]);
             break;
         case 1:
             if (gUnknown_020387D8)
-                gUnknown_03005D30 = SetPokemonCryTone(&gCryTable2[(128 * 1) + remaining]);
+                gMPlay_PokemonCry = SetPokemonCryTone(&gCryTable2[(128 * 1) + remaining]);
             else
-                gUnknown_03005D30 = SetPokemonCryTone(&gCryTable[(128 * 1) + remaining]);
+                gMPlay_PokemonCry = SetPokemonCryTone(&gCryTable[(128 * 1) + remaining]);
             break;
         case 2:
             if (gUnknown_020387D8)
-                gUnknown_03005D30 = SetPokemonCryTone(&gCryTable2[(128 * 2) + remaining]);
+                gMPlay_PokemonCry = SetPokemonCryTone(&gCryTable2[(128 * 2) + remaining]);
             else
-                gUnknown_03005D30 = SetPokemonCryTone(&gCryTable[(128 * 2) + remaining]);
+                gMPlay_PokemonCry = SetPokemonCryTone(&gCryTable[(128 * 2) + remaining]);
             break;
         case 3:
             if (gUnknown_020387D8)
-                gUnknown_03005D30 = SetPokemonCryTone(&gCryTable2[(128 * 3) + remaining]);
+                gMPlay_PokemonCry = SetPokemonCryTone(&gCryTable2[(128 * 3) + remaining]);
             else
-                gUnknown_03005D30 = SetPokemonCryTone(&gCryTable[(128 * 3) + remaining]);
+                gMPlay_PokemonCry = SetPokemonCryTone(&gCryTable[(128 * 3) + remaining]);
             break;
         }
     }
 
     // _080BACA2
-    if (gUnknown_03005D30 != NULL)
+    if (gMPlay_PokemonCry != NULL)
     {
-        gUnknown_020387B1 = IsPokemonCryPlaying(gUnknown_03005D30);
+        gUnknown_020387B1 = IsPokemonCryPlaying(gMPlay_PokemonCry);
 
         if (gUnknown_020387B1 != gUnknown_020387B2)
             PrintDriverTestMenuText();
@@ -1296,4 +1298,5 @@ void Task_ProcessCryTestInput(u8 taskId)
 void PrintCryNumber(void)
 {
     PrintSignedNumber(gSoundTestCryNum, 1, 17, 3);
+    LoadPalette(gUnknown_0860F074, 0xF0, 0x20);
 }
