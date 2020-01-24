@@ -1,5 +1,3 @@
-#if DEBUG
-
 #include "global.h"
 #include "sprite.h"
 #include "palette.h"
@@ -58,7 +56,10 @@ static EWRAM_DATA u8 gUnknown_020387D8 = 0;
 static EWRAM_DATA u8 gUnknown_020387D9 = 0;
 
 u16 gSoundTestCryNum;
-extern u8 gUnknown_03005E98;
+
+//extern u8 gUnknown_03005E98;
+//IWRAM common
+extern u8 gDexCryScreenState;
 
 struct MusicPlayerInfo *gUnknown_03005D30;
 
@@ -1226,7 +1227,8 @@ void Task_InitCryTest(u8 taskId)
     cryStruct.xPos = 4;
 
     zero = 0; // wtf?
-    gUnknown_03005E98 = 0;
+    //gUnknown_03005E98 = 0;
+    gDexCryScreenState = 0;
 
     while (sub_8119E3C(&cryStruct, 3) == FALSE)
         ;
@@ -1238,7 +1240,8 @@ void Task_InitCryTest(u8 taskId)
     cryStruct2.yPos = 12;
 
     zero = 0; // wtf?
-    gUnknown_03005E98 = 0;
+    //gUnknown_03005E98 = 0;
+    gDexCryScreenState = 0;
 
     while (ShowPokedexCryScreen(&cryStruct2, 2) == FALSE)
         ;
@@ -1294,5 +1297,3 @@ void PrintCryNumber(void)
 {
     PrintSignedNumber(gSoundTestCryNum, 1, 17, 3);
 }
-
-#endif
