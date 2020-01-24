@@ -30,6 +30,15 @@
 #define INCBIN_S32 INCBIN
 #endif // IDE support
 
+// For debug menu translations.
+// DTR("こんにちは", "Hello") will expand to "Hello" with DEBUG_TRANSLATE,
+// or "こんにちは" if not.
+// The KANA macro will wrap Japanese text with encoding markers to
+// prevent mojibake while they are being translated.
+
+#define DTR(japanese, english) _(english)
+#define KANA(txt) _("{JPN}" txt "{ENG}")
+
 #define ARRAY_COUNT(array) (size_t)(sizeof(array) / sizeof((array)[0]))
 
 // GameFreak used a macro called "NELEMS", as evidenced by
