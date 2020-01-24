@@ -14,6 +14,11 @@ It builds the following ROM:
 To set up the repository, see [INSTALL.md](INSTALL.md).
 
 
+## debugmenu branch
+
+This branch ports the German Pokémon Ruby Debug ROM items to pokeemerald.
+
+
 ## See also
 
 Other disassembly and/or decompilation projects:
