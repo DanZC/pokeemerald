@@ -1,10 +1,22 @@
 #include "global.h"
 #include "main.h"
+#include "menu.h"
 #include "task.h"
 #include "text.h"
 #include "palette.h"
+#include "sprite.h"
 
-extern struct Window gUnknown_03004210;
+//extern struct Window gUnknown_03004210;
+
+static const struct WindowTemplate sWindowTemplate_81E6FD8 = {
+    .bg = 0,
+    .tilemapLeft = 1,
+    .tilemapTop = 15,
+    .width = 17,
+    .height = 4,
+    .paletteNum = 0xF,
+    .baseBlock = 0x260
+};
 
 static void CB2_CrashIdle(void);
 
@@ -13,6 +25,8 @@ static void CB2_CrashIdle(void);
 void Crash(u8 *text)
 {
     u16 savedIme;
+    u16 windowId;
+    
 
     REG_BG0HOFS = 0;
     REG_BG0VOFS = 0;
@@ -35,11 +49,14 @@ void Crash(u8 *text)
     ResetTasks();
     ResetSpriteData();
     SetMainCallback2(CB2_CrashIdle);
-    DmaFill32Large(3, 0, (void *)VRAM, 0x18000, 0x1000);
-    Text_LoadWindowTemplate(&gWindowTemplate_81E6FD8);
-    Text_InitWindowWithTemplate(&gUnknown_03004210, &gWindowTemplate_81E6FD8);
-    LoadFontDefaultPalette(&gWindowTemplate_81E6FD8);
-    Text_InitWindowAndPrintText(&gUnknown_03004210, text, 1, 9, 7);
+    DmaFillLarge(3, 0, (void *)VRAM, 0x18000, 0x1000, 32);
+    //Text_LoadWindowTemplate(&gWindowTemplate_81E6FD8);
+    //Text_InitWindowWithTemplate(&gUnknown_03004210, &gWindowTemplate_81E6FD8);
+    //LoadFontDefaultPalette(&gWindowTemplate_81E6FD8);
+    //Text_InitWindowAndPrintText(&gUnknown_03004210, text, 1, 9, 7);
+    windowId = AddWindow(&sWindowTemplate_81E6FD8);
+    CopyWindowToVram(windowId, 2);
+    AddTextPrinterParameterized(windowId, 1, text, 8, 1, TEXT_SPEED_FF, NULL);
 }
 
 static void CB2_CrashIdle(void)

@@ -319,6 +319,7 @@ SECTIONS {
         src/pokenav_unk_10.o(.text);
         src/pokenav_match_call_data.o(.text);
         src/menu_specialized.o(.text);
+        src/debug/crash.o(.text);
         src/ereader_helpers.o(.text);
         src/faraway_island.o(.text);
         src/ereader_screen.o(.text);
@@ -675,6 +676,7 @@ SECTIONS {
         src/pokenav_unk_10.o(.rodata);
         src/pokenav_match_call_data.o(.rodata);
         src/menu_specialized.o(.rodata);
+        src/debug/crash.o(.rodata);
         src/ereader_helpers.o(.rodata);
         src/faraway_island.o(.rodata);
         src/ereader_screen.o(.rodata);
