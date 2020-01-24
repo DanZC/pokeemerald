@@ -25,6 +25,14 @@ enum
     SE_WINDOW
 };
 
+// window frame selections
+enum
+{
+    WIN_A,
+    WIN_B,
+    WIN_C
+};
+
 // driver test cry enums
 enum
 {
@@ -57,6 +65,8 @@ static EWRAM_DATA int sSoundTestParams[9] = {0};
 static EWRAM_DATA u8 gUnknown_020387D8 = 0;
 static EWRAM_DATA u8 gUnknown_020387D9 = 0;
 
+EWRAM_DATA u8 gSoundCheckWindowIds[3] = {0,0,0};
+
 u16 gSoundTestCryNum;
 
 //extern u8 gUnknown_03005E98;
@@ -80,6 +90,61 @@ static const struct WindowTemplate sSoundCheckTextWindow[] =
     },
     DUMMY_WIN_TEMPLATE
 };
+
+static const struct WindowTemplate sSoundCheckMUSFrame[] =
+{
+    {
+        .bg = 0,
+        .tilemapLeft = 2,
+        .tilemapTop = 0,
+        .width = 25,
+        .height = 3,
+        .paletteNum = 15,
+        .baseBlock = 1,
+    },
+    {
+        .bg = 0,
+        .tilemapLeft = 2,
+        .tilemapTop = 5,
+        .width = 25,
+        .height = 5,
+        .paletteNum = 15,
+        .baseBlock = 1,
+    },
+    {
+        .bg = 0,
+        .tilemapLeft = 2,
+        .tilemapTop = 12,
+        .width = 25,
+        .height = 5,
+        .paletteNum = 15,
+        .baseBlock = 1,
+    }
+};
+
+static const struct WindowTemplate sSoundCheckSEFrame[] =
+{
+    {
+        .bg = 0,
+        .tilemapLeft = 0,
+        .tilemapTop = 0,
+        .width = 29,
+        .height = 19,
+        .paletteNum = 0,
+        .baseBlock = 0,
+    },
+    {
+        .bg = 0,
+        .tilemapLeft = 0,
+        .tilemapTop = 16,
+        .width = 5,
+        .height = 3,
+        .paletteNum = 0,
+        .baseBlock = 0,
+    }
+};
+
+#define MUS_STOP (MUS_TETSUJI - 1)
 
 void Task_InitSoundCheckMenu(u8);
 void sub_80BA384(u8);
@@ -187,16 +252,27 @@ void Task_InitSoundCheckMenu(u8 taskId)
 
     if (!gPaletteFade.active)
     {
-        Menu_DrawStdWindowFrame(2, 0, 27, 3);
-        Menu_DrawStdWindowFrame(2, 5, 27, 10);
-        Menu_DrawStdWindowFrame(2, 12, 27, 17);
-        Menu_PrintText(soundcheckStr, 4, 1);
-        Menu_PrintText(abDescStr, 14, 1);
-        Menu_PrintText(bgmStr, 4, 6);
-        Menu_PrintText(upDownStr, 14, 6);
-        Menu_PrintText(seStr, 4, 13);
-        Menu_PrintText(upDownStr, 14, 13);
-        Menu_PrintText(driverStr, 14, 18);
+        //Menu_DrawStdWindowFrame(2, 0, 27, 3);
+        //Menu_DrawStdWindowFrame(2, 5, 27, 10);
+        //Menu_DrawStdWindowFrame(2, 12, 27, 17);
+        DrawStdFrameWithCustomTileAndPalette(gSoundCheckWindowIds[MUS_WINDOW], TRUE, 0, 15);
+        DrawStdFrameWithCustomTileAndPalette(gSoundCheckWindowIds[MUS_WINDOW], TRUE, 1, 15);
+        DrawStdFrameWithCustomTileAndPalette(gSoundCheckWindowIds[MUS_WINDOW], TRUE, 2, 15);
+
+        //Menu_PrintText(soundcheckStr, 4, 1);
+        AddTextPrinterParameterized(gSoundCheckWindowIds[MUS_WINDOW], 1, soundcheckStr, 4, 1, TEXT_SPEED_FF, NULL);
+        //Menu_PrintText(abDescStr, 14, 1);
+        AddTextPrinterParameterized(gSoundCheckWindowIds[MUS_WINDOW], 1, abDescStr, 14, 1, TEXT_SPEED_FF, NULL);
+        //Menu_PrintText(bgmStr, 4, 6);
+        AddTextPrinterParameterized(gSoundCheckWindowIds[MUS_WINDOW], 1, bgmStr, 4, 6, TEXT_SPEED_FF, NULL);
+        //Menu_PrintText(upDownStr, 14, 6);
+        AddTextPrinterParameterized(gSoundCheckWindowIds[MUS_WINDOW], 1, upDownStr, 14, 6, TEXT_SPEED_FF, NULL);
+        //Menu_PrintText(seStr, 4, 13);
+        AddTextPrinterParameterized(gSoundCheckWindowIds[MUS_WINDOW], 1, seStr, 4, 13, TEXT_SPEED_FF, NULL);
+        //Menu_PrintText(upDownStr, 14, 13);
+        AddTextPrinterParameterized(gSoundCheckWindowIds[MUS_WINDOW], 1, upDownStr, 14, 13, TEXT_SPEED_FF, NULL);
+        //Menu_PrintText(driverStr, 14, 18);
+        AddTextPrinterParameterized(gSoundCheckWindowIds[MUS_WINDOW], 1, driverStr, 14, 18, TEXT_SPEED_FF, NULL);
         gTasks[taskId].func = sub_80BA384;
         REG_WIN0H = WIN_RANGE(17, 223);
         REG_WIN0V = WIN_RANGE(1, 31);
@@ -400,7 +476,8 @@ void PrintSoundNumber(u16 soundIndex, u16 x, u16 y) // PrintSoundNumber ?
         str[1] = divisorValue + CHAR_0;
 
     str[2] = ((soundIndex % 100) % 10) + CHAR_0;
-    Menu_PrintText(str, x, y);
+    //Menu_PrintText(str, x, y);
+    AddTextPrinterParameterized(gSoundCheckWindowIds[SE_WINDOW], 1, str, x, y, TEXT_SPEED_FF, NULL);
 }
 
 void sub_80BA79C(const u8 *const string, u16 x, u16 y)
@@ -416,7 +493,8 @@ void sub_80BA79C(const u8 *const string, u16 x, u16 y)
     for (i = 0; string[i] != EOS && i < 10; i++)
         str[i] = string[i];
 
-    Menu_PrintText(str, x, y);
+    //Menu_PrintText(str, x, y);
+    AddTextPrinterParameterized(gSoundCheckWindowIds[SE_WINDOW], 1, str, x, y, TEXT_SPEED_FF, NULL);
 }
 
 void Task_DrawDriverTestMenu(u8 taskId) // Task_DrawDriverTestMenu
@@ -437,21 +515,37 @@ void Task_DrawDriverTestMenu(u8 taskId) // Task_DrawDriverTestMenu
     u8 stereoStr[] = DTR("すてれお‥‥‥‥", "STEREO"); // stereo
 
     REG_DISPCNT = 0x3140;
-    Menu_DrawStdWindowFrame(0, 0, 29, 19);
-    Menu_PrintText(bbackStr, 19, 4);
-    Menu_PrintText(aplayStr, 19, 2);
-    Menu_PrintText(voiceStr, 2, 1);
-    Menu_PrintText(volumeStr, 2, 3);
-    Menu_PrintText(panpotStr, 2, 5);
-    Menu_PrintText(pitchStr, 2, 7);
-    Menu_PrintText(lengthStr, 2, 9);
-    Menu_PrintText(releaseStr, 2, 11);
-    Menu_PrintText(progressStr, 2, 13);
-    Menu_PrintText(chorusStr, 2, 15);
-    Menu_PrintText(priorityStr, 2, 17);
-    Menu_PrintText(playingStr, 19, 16);
-    Menu_PrintText(reverseStr, 19, 14);
-    Menu_PrintText(stereoStr, 19, 12);
+    //Menu_DrawStdWindowFrame(0, 0, 29, 19);
+    gSoundCheckWindowIds[SE_WINDOW] = AddWindowWithoutTileMap(sSoundCheckSEFrame);
+    DrawStdWindowFrame(gSoundCheckWindowIds[SE_WINDOW], FALSE);
+    //Menu_PrintText(bbackStr, 19, 4);
+    AddTextPrinterParameterized(gSoundCheckWindowIds[SE_WINDOW], 1, bbackStr, 19, 4, TEXT_SPEED_FF, NULL);
+    //Menu_PrintText(aplayStr, 19, 2);
+    AddTextPrinterParameterized(gSoundCheckWindowIds[SE_WINDOW], 1, aplayStr, 19, 2, TEXT_SPEED_FF, NULL);
+    //Menu_PrintText(voiceStr, 2, 1);
+    AddTextPrinterParameterized(gSoundCheckWindowIds[SE_WINDOW], 1, voiceStr, 2, 1, TEXT_SPEED_FF, NULL);
+    //Menu_PrintText(volumeStr, 2, 3);
+    AddTextPrinterParameterized(gSoundCheckWindowIds[SE_WINDOW], 1, volumeStr, 2, 3, TEXT_SPEED_FF, NULL);
+    //Menu_PrintText(panpotStr, 2, 5);
+    AddTextPrinterParameterized(gSoundCheckWindowIds[SE_WINDOW], 1, panpotStr, 2, 5, TEXT_SPEED_FF, NULL);
+    //Menu_PrintText(pitchStr, 2, 7);
+    AddTextPrinterParameterized(gSoundCheckWindowIds[SE_WINDOW], 1, pitchStr, 2, 7, TEXT_SPEED_FF, NULL);
+    //Menu_PrintText(lengthStr, 2, 9);
+    AddTextPrinterParameterized(gSoundCheckWindowIds[SE_WINDOW], 1, lengthStr, 2, 9, TEXT_SPEED_FF, NULL);
+    //Menu_PrintText(releaseStr, 2, 11);
+    AddTextPrinterParameterized(gSoundCheckWindowIds[SE_WINDOW], 1, releaseStr, 2, 11, TEXT_SPEED_FF, NULL);
+    //Menu_PrintText(progressStr, 2, 13);
+    AddTextPrinterParameterized(gSoundCheckWindowIds[SE_WINDOW], 1, progressStr, 2, 13, TEXT_SPEED_FF, NULL);
+    //Menu_PrintText(chorusStr, 2, 15);
+    AddTextPrinterParameterized(gSoundCheckWindowIds[SE_WINDOW], 1, chorusStr, 2, 15, TEXT_SPEED_FF, NULL);
+    //Menu_PrintText(priorityStr, 2, 17);
+    AddTextPrinterParameterized(gSoundCheckWindowIds[SE_WINDOW], 1, priorityStr, 2, 17, TEXT_SPEED_FF, NULL);
+    //Menu_PrintText(playingStr, 19, 16);
+    AddTextPrinterParameterized(gSoundCheckWindowIds[SE_WINDOW], 1, playingStr, 19, 16, TEXT_SPEED_FF, NULL);
+    //Menu_PrintText(reverseStr, 19, 14);
+    AddTextPrinterParameterized(gSoundCheckWindowIds[SE_WINDOW], 1, reverseStr, 19, 14, TEXT_SPEED_FF, NULL);
+    //Menu_PrintText(stereoStr, 19, 12);
+    AddTextPrinterParameterized(gSoundCheckWindowIds[SE_WINDOW], 1, bbackStr, 19, 12, TEXT_SPEED_FF, NULL);
     REG_WIN0H = WIN_RANGE(0, DISPLAY_WIDTH);
     REG_WIN0V = WIN_RANGE(0, DISPLAY_HEIGHT);
     sDriverTestSelection = 0;
@@ -481,7 +575,9 @@ void Task_ProcessDriverTestInput(u8 taskId)
         REG_DISPCNT = 0x7140;
         REG_WIN0H = WIN_RANGE(17, 223);
         REG_WIN0V = WIN_RANGE(1, 31);
-        Menu_EraseWindowRect(0, 0, 29, 19);
+        ClearStdWindowAndFrame(gSoundCheckWindowIds[SE_WINDOW], TRUE);
+        RemoveWindow(gSoundCheckWindowIds[SE_WINDOW]);
+        //Menu_EraseWindowRect(0, 0, 29, 19);
         gTasks[taskId].func = Task_InitSoundCheckMenu;
         return;
     }
@@ -643,8 +739,8 @@ void sub_80BAE10(u8 var1, u8 var2)
     u8 str1[] = _("▶");
     u8 str2[] = _(" ");
 
-    Menu_PrintText(str2, gUnknown_083D0300[MULTI_DIM_ARR(var1, B_16, 0)], gUnknown_083D0300[MULTI_DIM_ARR(var1, B_16, 1)]);
-    Menu_PrintText(str1, gUnknown_083D0300[MULTI_DIM_ARR(var2, B_16, 0)], gUnknown_083D0300[MULTI_DIM_ARR(var2, B_16, 1)]);
+    //Menu_PrintText(str2, gUnknown_083D0300[MULTI_DIM_ARR(var1, B_16, 0)], gUnknown_083D0300[MULTI_DIM_ARR(var1, B_16, 1)]);
+    //Menu_PrintText(str1, gUnknown_083D0300[MULTI_DIM_ARR(var2, B_16, 0)], gUnknown_083D0300[MULTI_DIM_ARR(var2, B_16, 1)]);
 }
 
 void PrintSignedNumber(int n, u16 x, u16 y, u8 digits)
@@ -693,7 +789,8 @@ void PrintSignedNumber(int n, u16 x, u16 y, u8 digits)
         n %= powersOfTen[i];
     }
 
-    Menu_PrintText(str, x, y);
+    //Menu_PrintText(str, x, y);
+    AddTextPrinterParameterized(gSoundCheckWindowIds[SE_WINDOW], 1, str, 3, 2, TEXT_SPEED_FF, NULL);
 }
 
 static const s8 gUnknown_083D03F8[5] = { 0x3F, 0x00, 0xC0, 0x7F, 0x80 };
@@ -705,10 +802,15 @@ void sub_80BAF84(u8 taskId)
     u8 playingStr[] = DTR("さいせいちゆう‥", "PLAYING");
 
     REG_DISPCNT = 0x3140;
-    Menu_DrawStdWindowFrame(0, 0, 29, 19);
-    Menu_PrintText(seStr, 3, 2);
-    Menu_PrintText(panStr, 3, 4);
-    Menu_PrintText(playingStr, 3, 8);
+    //Menu_DrawStdWindowFrame(0, 0, 29, 19);
+    gSoundCheckWindowIds[SE_WINDOW] = AddWindowWithoutTileMap(sSoundCheckSEFrame);
+    DrawStdWindowFrame(gSoundCheckWindowIds[SE_WINDOW], FALSE);
+    //Menu_PrintText(seStr, 3, 2);
+    AddTextPrinterParameterized(SE_WINDOW, 1, seStr, 3, 2, TEXT_SPEED_FF, NULL);
+    //Menu_PrintText(panStr, 3, 4);
+    AddTextPrinterParameterized(SE_WINDOW, 1, panStr, 3, 4, TEXT_SPEED_FF, NULL);
+    //Menu_PrintText(playingStr, 3, 8);
+    AddTextPrinterParameterized(SE_WINDOW, 1, playingStr, 3, 8, TEXT_SPEED_FF, NULL);
     REG_WIN0H = WIN_RANGE(0, DISPLAY_WIDTH);
     REG_WIN0V = WIN_RANGE(0, DISPLAY_HEIGHT);
     sSoundTestParams[CRY_TEST_VOICE] = 1;
@@ -755,7 +857,9 @@ void sub_80BB038(u8 taskId)
         REG_DISPCNT = 0x7140;
         REG_WIN0H = WIN_RANGE(17, 223);
         REG_WIN0V = WIN_RANGE(1, 31);
-        Menu_EraseWindowRect(0, 0, 29, 19);
+        ClearStdWindowAndFrame(gSoundCheckWindowIds[SE_WINDOW], TRUE);
+        RemoveWindow(gSoundCheckWindowIds[SE_WINDOW]);
+        //Menu_EraseWindowRect(0, 0, 29, 19);
         gTasks[taskId].func = Task_InitSoundCheckMenu;
         return;
     }
@@ -822,10 +926,12 @@ void sub_80BB1D4(void)
     switch (gUnknown_083D03F8[sSoundTestParams[CRY_TEST_PANPOT]])
     {
     case 127:
-        Menu_PrintText(lrStr, 7, 4);
+        //Menu_PrintText(lrStr, 7, 4);
+        AddTextPrinterParameterized(gSoundCheckWindowIds[SE_WINDOW], 1, lrStr, 7, 4, TEXT_SPEED_FF, NULL);
         break;
     case -128:
-        Menu_PrintText(rlStr, 7, 4);
+        //Menu_PrintText(rlStr, 7, 4);
+        AddTextPrinterParameterized(gSoundCheckWindowIds[SE_WINDOW], 1, rlStr, 7, 4, TEXT_SPEED_FF, NULL);
         break;
     default:
         PrintSignedNumber(gUnknown_083D03F8[sSoundTestParams[CRY_TEST_PANPOT]], 7, 4, 3);
@@ -1233,8 +1339,9 @@ void Task_InitCryTest(u8 taskId)
     struct CryRelatedStruct cryStruct, cryStruct2;
     u8 zero;
 
-    Text_LoadWindowTemplate(&gWindowTemplate_81E6C3C);
-    InitMenuWindow(&gMenuTextWindowTemplate);
+    //Text_LoadWindowTemplate(&gWindowTemplate_81E6C3C);
+    //InitMenuWindow(&gMenuTextWindowTemplate);
+    InitSoundCheckScreenWindows();
     gSoundTestCryNum = 1;
     ResetSpriteData();
     FreeAllSpritePalettes();
@@ -1265,7 +1372,8 @@ void Task_InitCryTest(u8 taskId)
     while (ShowPokedexCryScreen(&cryStruct2, 2) == FALSE)
         ;
 
-    Menu_DrawStdWindowFrame(0, 16, 5, 19);
+    //Menu_DrawStdWindowFrame(0, 16, 5, 19);
+    DrawStdFrameWithCustomTileAndPalette(gSoundCheckWindowIds[SE_WINDOW], FALSE, 1, 1);
     PrintCryNumber();
     BeginNormalPaletteFade(0xFFFFFFFF, 0, 16, 0, RGB(0, 0, 0));
     REG_BG2HOFS = 0;
@@ -1306,7 +1414,9 @@ void Task_ProcessCryTestInput(u8 taskId)
         REG_DISPCNT = 0x7140;
         REG_WIN0H = WIN_RANGE(17, 223);
         REG_WIN0V = WIN_RANGE(1, 31);
-        Menu_EraseWindowRect(0, 0, 29, 19);
+        ClearStdWindowAndFrame(gSoundCheckWindowIds[SE_WINDOW], TRUE);
+        RemoveWindow(gSoundCheckWindowIds[SE_WINDOW]);
+        //Menu_EraseWindowRect(0, 0, 29, 19);
         gTasks[taskId].func = Task_InitSoundCheckMenu;
         DestroyCryMeterNeedleSprite();
     }
@@ -1319,7 +1429,7 @@ void PrintCryNumber(void)
 
 static void InitSoundCheckScreenWindows(void)
 {
-    InitWindows(sSoundCheckTextWindow);
+    InitWindows(sSoundCheckMUSFrame);
     DeactivateAllTextPrinters();
     FillWindowPixelBuffer(0, PIXEL_FILL(0));
     LoadWindowGfx(0, 0, 2, 224);
