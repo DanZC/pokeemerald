@@ -1,17 +1,35 @@
 #include "global.h"
 #include "sprite.h"
+#include "graphics.h"
 #include "palette.h"
 #include "task.h"
 #include "m4a.h"
 #include "main.h"
 #include "text.h"
 #include "menu.h"
+#include "gpu_regs.h"
+#include "bg.h"
 #include "text_window.h"
+#include "constants/rgb.h"
 #include "constants/songs.h"
 #include "title_screen.h"
 #include "sound.h"
 #include "window.h"
 #include "pokedex_cry_screen.h"
+#include "international_string_util.h"
+
+// why does GF hate 2d arrays
+#define MULTI_DIM_ARR(x, dim, y) ((x) * dim + (y))
+
+#define FRAME_TILE_OFFSET 0x1D5
+
+// dim access enums
+enum
+{
+    B_8 = 1,
+    B_16 = 2,
+    B_32 = 4
+};
 
 // local task defines
 #define tWindowSelected data[0]
@@ -30,7 +48,9 @@ enum
 {
     WIN_A,
     WIN_B,
-    WIN_C
+    WIN_C,
+    CRY_A,
+    CRY_B
 };
 
 // driver test cry enums
@@ -65,9 +85,8 @@ static EWRAM_DATA int sSoundTestParams[9] = {0};
 static EWRAM_DATA u8 gUnknown_020387D8 = 0;
 static EWRAM_DATA u8 gUnknown_020387D9 = 0;
 
-EWRAM_DATA u8 gSoundCheckWindowIds[3] = {0,0,0};
-
-u16 gSoundTestCryNum;
+EWRAM_DATA u8 gSoundCheckWindowIds[6] = {0,0,0,0,0,0};
+EWRAM_DATA u16 gSoundTestCryNum;
 
 //extern u8 gUnknown_03005E98;
 //IWRAM common
@@ -77,49 +96,39 @@ extern u8 gDexCryScreenState;
 extern struct MusicPlayerInfo* gMPlay_PokemonCry;
 extern struct MusicPlayerInfo gMPlayInfo_BGM;
 
-static const struct WindowTemplate sSoundCheckTextWindow[] =
-{
-    {
-        .bg = 0,
-        .tilemapLeft = 3,
-        .tilemapTop = 15,
-        .width = 26,
-        .height = 4,
-        .paletteNum = 15,
-        .baseBlock = 11,
-    },
-    DUMMY_WIN_TEMPLATE
-};
+static const u16 sSoundCheckBgPal[] = INCBIN_U16("graphics/misc/main_menu_bg.gbapal");
+static const u16 sSoundCheckTextPal[] = INCBIN_U16("graphics/misc/main_menu_text.gbapal");
 
 static const struct WindowTemplate sSoundCheckMUSFrame[] =
 {
     {
         .bg = 0,
-        .tilemapLeft = 2,
-        .tilemapTop = 0,
-        .width = 25,
-        .height = 3,
+        .tilemapLeft = 3,
+        .tilemapTop = 1,
+        .width = 24,
+        .height = 2,
         .paletteNum = 15,
         .baseBlock = 1,
     },
     {
         .bg = 0,
-        .tilemapLeft = 2,
-        .tilemapTop = 5,
-        .width = 25,
-        .height = 5,
+        .tilemapLeft = 3,
+        .tilemapTop = 6,
+        .width = 24,
+        .height = 4,
         .paletteNum = 15,
-        .baseBlock = 1,
+        .baseBlock = 49,
     },
     {
         .bg = 0,
-        .tilemapLeft = 2,
-        .tilemapTop = 12,
-        .width = 25,
-        .height = 5,
+        .tilemapLeft = 3,
+        .tilemapTop = 13,
+        .width = 24,
+        .height = 4,
         .paletteNum = 15,
-        .baseBlock = 1,
-    }
+        .baseBlock = 145,
+    },
+    DUMMY_WIN_TEMPLATE
 };
 
 static const struct WindowTemplate sSoundCheckSEFrame[] =
@@ -130,8 +139,8 @@ static const struct WindowTemplate sSoundCheckSEFrame[] =
         .tilemapTop = 0,
         .width = 29,
         .height = 19,
-        .paletteNum = 0,
-        .baseBlock = 0,
+        .paletteNum = 15,
+        .baseBlock = 1,
     },
     {
         .bg = 0,
@@ -139,8 +148,30 @@ static const struct WindowTemplate sSoundCheckSEFrame[] =
         .tilemapTop = 16,
         .width = 5,
         .height = 3,
-        .paletteNum = 0,
-        .baseBlock = 0,
+        .paletteNum = 15,
+        .baseBlock = 1,
+    },
+    DUMMY_WIN_TEMPLATE
+};
+
+static const struct BgTemplate sSoundCheckBgTemplates[] = {
+    {
+        .bg = 0,
+        .charBaseIndex = 2,
+        .mapBaseIndex = 30,
+        .screenSize = 0,
+        .paletteMode = 0,
+        .priority = 0,
+        .baseTile = 0
+    },
+    {
+        .bg = 1,
+        .charBaseIndex = 0,
+        .mapBaseIndex = 7,
+        .screenSize = 0,
+        .paletteMode = 0,
+        .priority = 3,
+        .baseTile = 0
     }
 };
 
@@ -151,8 +182,8 @@ void sub_80BA384(u8);
 void sub_80BA65C(u8);
 void sub_80BA68C(u8);
 void HighlightSelectedWindow(u8);
-void PrintSoundNumber(u16, u16, u16);
-void sub_80BA79C(const u8 *const, u16, u16);
+void PrintSoundNumber(u8, u16, u16, u16);
+void sub_80BA79C(u8, const u8 *const, u16, u16);
 void Task_DrawDriverTestMenu(u8);
 void Task_ProcessDriverTestInput(u8);
 void AdjustSelectedDriverParam(s8);
@@ -167,6 +198,8 @@ void Task_ProcessCryTestInput(u8);
 void PrintCryNumber(void);
 
 static void InitSoundCheckScreenWindows(void);
+static void LoadSoundCheckWindowFrameTiles(u8 bgId, u16 tileOffset);
+static void DrawMainMenuWindowBorder(const struct WindowTemplate *template, u16 baseTileNum);
 
 void CB2_SoundCheckMenu(void)
 {
@@ -196,41 +229,57 @@ void CB2_StartSoundCheckMenu(void)
     u8 taskId;
 
     SetVBlankCallback(NULL);
-    REG_DISPCNT = 0;
-    REG_BG2CNT = 0;
-    REG_BG1CNT = 0;
-    REG_BG0CNT = 0;
-    REG_BG2HOFS = 0;
-    REG_BG2VOFS = 0;
-    REG_BG1HOFS = 0;
-    REG_BG1VOFS = 0;
-    REG_BG0HOFS = 0;
-    REG_BG0VOFS = 0;
+    SetGpuReg(REG_OFFSET_DISPCNT, 0);
+    SetGpuReg(REG_OFFSET_BG2CNT, 0);
+    SetGpuReg(REG_OFFSET_BG1CNT, 0);
+    SetGpuReg(REG_OFFSET_BG0CNT, 0);
+    SetGpuReg(REG_OFFSET_BG2HOFS, 0);
+    SetGpuReg(REG_OFFSET_BG2VOFS, 0);
+    SetGpuReg(REG_OFFSET_BG1HOFS, 0);
+    SetGpuReg(REG_OFFSET_BG1VOFS, 0);
+    SetGpuReg(REG_OFFSET_BG0HOFS, 0);
+    SetGpuReg(REG_OFFSET_BG0VOFS, 0);
     DmaFill16(3, 0, VRAM, VRAM_SIZE);
     DmaFill32(3, 0, OAM, OAM_SIZE);
     DmaFill16(3, 0, PLTT, PLTT_SIZE);
     ResetPaletteFade();
+    LoadPalette(sSoundCheckBgPal, 0, 32);
+    LoadPalette(gUnknown_0860F074, 0xF0, 0x20);
     ResetTasks();
     ResetSpriteData();
     //Text_LoadWindowTemplate(&gWindowTemplate_81E6C3C);
     //InitMenuWindow(&gMenuTextWindowTemplate);
-    InitSoundCheckScreenWindows();
-    BeginNormalPaletteFade(0xFFFFFFFF, 0, 16, 0, RGB(0, 0, 0));
-    REG_WIN0H = WIN_RANGE(0, 0);
-    REG_WIN0V = WIN_RANGE(0, 0);
-    REG_WIN1H = WIN_RANGE(0, 0);
-    REG_WIN1V = WIN_RANGE(0, 0);
-    REG_WININ = 0x1111;
-    REG_WINOUT = 0x31;
-    REG_BLDCNT = 0xE1;
-    REG_BLDALPHA = 0;
-    REG_BLDY = 7;
-    REG_IE = 1; // could be a typo of REG_IME
+    //BeginNormalPaletteFade(0xFFFFFFFF, 0, 16, 0, RGB(0, 0, 0));
+    BeginNormalPaletteFade(0xFFFFFFFF, 0, 0x10, 0, RGB_BLACK);
+    ResetBgsAndClearDma3BusyFlags(0);
+    InitBgsFromTemplates(0, sSoundCheckBgTemplates, ARRAY_COUNT(sSoundCheckBgTemplates));
+    LoadSoundCheckWindowFrameTiles(0, FRAME_TILE_OFFSET);
+    ChangeBgX(0, 0, 0);
+    ChangeBgY(0, 0, 0);
+    ChangeBgX(1, 0, 0);
+    ChangeBgY(1, 0, 0);
+    InitWindows(sSoundCheckMUSFrame);
+    DeactivateAllTextPrinters();
+    gSoundCheckWindowIds[WIN_A] = 0;
+    gSoundCheckWindowIds[WIN_B] = 1;
+    gSoundCheckWindowIds[WIN_C] = 2;
+    SetGpuReg(REG_OFFSET_WIN0H, WIN_RANGE(0, 0));
+    SetGpuReg(REG_OFFSET_WIN0V, WIN_RANGE(0, 0));
+    SetGpuReg(REG_OFFSET_WIN1H, WIN_RANGE(0, 0));
+    SetGpuReg(REG_OFFSET_WIN1V, WIN_RANGE(0, 0));
+    SetGpuReg(REG_OFFSET_WININ, 0x1111);
+    SetGpuReg(REG_OFFSET_WINOUT, 0x31);
+    SetGpuReg(REG_OFFSET_BLDCNT, 0xE1);
+    SetGpuReg(REG_OFFSET_BLDALPHA, 0);
+    SetGpuReg(REG_OFFSET_BLDY, 7);
+    REG_IME = 1; // could be a typo of REG_IME
     REG_IE |= 1;
-    REG_DISPSTAT |= 8;
+    SetGpuRegBits(REG_OFFSET_DISPSTAT, 8);
+    //REG_DISPSTAT |= 8;
     SetVBlankCallback(VBlankCB_SoundCheckMenu);
     SetMainCallback2(CB2_SoundCheckMenu);
-    REG_DISPCNT = 0x7140;
+    //REG_DISPCNT = 0x7140;
+    SetGpuReg(REG_OFFSET_DISPCNT, 0x7140);
     taskId = CreateTask(Task_InitSoundCheckMenu, 0);
     gTasks[taskId].tWindowSelected = MUS_WINDOW;
     gTasks[taskId].tBgmIndex = 0;
@@ -246,33 +295,83 @@ void Task_InitSoundCheckMenu(u8 taskId)
     u8 soundcheckStr[] = DTR("サウンドチェック", "SOUND CHECK");
     u8 bgmStr[] = _("BGM");
     u8 seStr[] = _("SE ");
-    u8 abDescStr[] = DTR("A‥さいせい　B‥おわり", "A PLAY  B STOP");
-    u8 upDownStr[] = _("L‥UP R‥DOWN");
-    u8 driverStr[] = _("R‥DRIVER-TEST");
+    u8 abDescStr[] = DTR("A.さいせい　B.おわり", "A PLAY  B STOP");
+    u8 upDownStr[] = _("L..UP R..DOWN");
+    u8 driverStr[] = _("R..DRIVER-TEST");
+    s16 xx;
+    u16 palette;
+    struct WindowTemplate winTemp;
 
     if (!gPaletteFade.active)
     {
+        palette = RGB_BLACK;
+        LoadPalette(&palette, 254, 2);
+
+        palette = RGB_WHITE;
+        LoadPalette(&palette, 250, 2);
+
+        palette = RGB(12, 12, 12);
+        LoadPalette(&palette, 251, 2);
+
+        palette = RGB(26, 26, 25);
+        LoadPalette(&palette, 252, 2);
+
+        ShowBg(0);
+        HideBg(1);
         //Menu_DrawStdWindowFrame(2, 0, 27, 3);
+        //winTemp = CreateWindowTemplate(0, 2, 0, 27, 3, 15, 1);
+        //gSoundCheckWindowIds[WIN_A] = AddWindow(&winTemp);
+        //FillWindowPixelBuffer(gSoundCheckWindowIds[WIN_A], PIXEL_FILL(1));
         //Menu_DrawStdWindowFrame(2, 5, 27, 10);
+        //winTemp = CreateWindowTemplate(0, 2, 5, 27, 5, 15, 82);
+        //gSoundCheckWindowIds[WIN_B] = AddWindow(&winTemp);
+        //FillWindowPixelBuffer(gSoundCheckWindowIds[WIN_B], PIXEL_FILL(1));
         //Menu_DrawStdWindowFrame(2, 12, 27, 17);
-        DrawStdFrameWithCustomTileAndPalette(gSoundCheckWindowIds[MUS_WINDOW], TRUE, 0, 15);
-        DrawStdFrameWithCustomTileAndPalette(gSoundCheckWindowIds[MUS_WINDOW], TRUE, 1, 15);
-        DrawStdFrameWithCustomTileAndPalette(gSoundCheckWindowIds[MUS_WINDOW], TRUE, 2, 15);
+        //winTemp = CreateWindowTemplate(0, 2, 5, 27, 5, 15, 217);
+        //gSoundCheckWindowIds[WIN_C] = AddWindow(&winTemp);
+        //FillWindowPixelBuffer(gSoundCheckWindowIds[WIN_C], PIXEL_FILL(1));
+        //DrawStdWindowFrame(gSoundCheckWindowIds[WIN_A], FALSE);
+        //DrawStdWindowFrame(gSoundCheckWindowIds[WIN_B], FALSE);
+        //DrawStdWindowFrame(gSoundCheckWindowIds[WIN_C], FALSE);
+        FillWindowPixelBuffer(0, PIXEL_FILL(0xA));
+        FillWindowPixelBuffer(1, PIXEL_FILL(0xA));
+        FillWindowPixelBuffer(2, PIXEL_FILL(0xA));
+
+        //FillWindowPixelBuffer(gSoundCheckWindowIds[WIN_A], PIXEL_FILL(0xF));
+        //FillWindowPixelBuffer(gSoundCheckWindowIds[WIN_B], PIXEL_FILL(0xF));
+        //FillWindowPixelBuffer(gSoundCheckWindowIds[WIN_C], PIXEL_FILL(0xF));
 
         //Menu_PrintText(soundcheckStr, 4, 1);
-        AddTextPrinterParameterized(gSoundCheckWindowIds[MUS_WINDOW], 1, soundcheckStr, 4, 1, TEXT_SPEED_FF, NULL);
+        #define WINDOW_WIDTH 24*8
+
+        xx = GetStringRightAlignXOffset(1, abDescStr, WINDOW_WIDTH);
+        AddTextPrinterParameterized(gSoundCheckWindowIds[WIN_A], 1, soundcheckStr, 4, 1, TEXT_SPEED_FF, NULL);
         //Menu_PrintText(abDescStr, 14, 1);
-        AddTextPrinterParameterized(gSoundCheckWindowIds[MUS_WINDOW], 1, abDescStr, 14, 1, TEXT_SPEED_FF, NULL);
+        AddTextPrinterParameterized(gSoundCheckWindowIds[WIN_A], 1, abDescStr, xx, 1, TEXT_SPEED_FF, NULL);
         //Menu_PrintText(bgmStr, 4, 6);
-        AddTextPrinterParameterized(gSoundCheckWindowIds[MUS_WINDOW], 1, bgmStr, 4, 6, TEXT_SPEED_FF, NULL);
+        xx = GetStringRightAlignXOffset(1, upDownStr, WINDOW_WIDTH);
+        AddTextPrinterParameterized(gSoundCheckWindowIds[WIN_B], 1, bgmStr, 4, 1, TEXT_SPEED_FF, NULL);
         //Menu_PrintText(upDownStr, 14, 6);
-        AddTextPrinterParameterized(gSoundCheckWindowIds[MUS_WINDOW], 1, upDownStr, 14, 6, TEXT_SPEED_FF, NULL);
+        AddTextPrinterParameterized(gSoundCheckWindowIds[WIN_B], 1, upDownStr, xx, 1, TEXT_SPEED_FF, NULL);
         //Menu_PrintText(seStr, 4, 13);
-        AddTextPrinterParameterized(gSoundCheckWindowIds[MUS_WINDOW], 1, seStr, 4, 13, TEXT_SPEED_FF, NULL);
+        AddTextPrinterParameterized(gSoundCheckWindowIds[WIN_C], 1, seStr, 4, 1, TEXT_SPEED_FF, NULL);
         //Menu_PrintText(upDownStr, 14, 13);
-        AddTextPrinterParameterized(gSoundCheckWindowIds[MUS_WINDOW], 1, upDownStr, 14, 13, TEXT_SPEED_FF, NULL);
+        AddTextPrinterParameterized(gSoundCheckWindowIds[WIN_C], 1, upDownStr, xx, 1, TEXT_SPEED_FF, NULL);
         //Menu_PrintText(driverStr, 14, 18);
-        AddTextPrinterParameterized(gSoundCheckWindowIds[MUS_WINDOW], 1, driverStr, 14, 18, TEXT_SPEED_FF, NULL);
+        xx = GetStringRightAlignXOffset(1, driverStr, WINDOW_WIDTH);
+        AddTextPrinterParameterized(gSoundCheckWindowIds[WIN_C], 1, driverStr, xx, 36, TEXT_SPEED_FF, NULL);
+
+        #undef WINDOW_WIDTH
+
+        PutWindowTilemap(gSoundCheckWindowIds[MUS_WINDOW]);
+        CopyWindowToVram(gSoundCheckWindowIds[MUS_WINDOW], 2);
+
+        PutWindowTilemap(gSoundCheckWindowIds[WIN_B]);
+        CopyWindowToVram(gSoundCheckWindowIds[WIN_B], 2);
+
+        PutWindowTilemap(gSoundCheckWindowIds[WIN_C]);
+        CopyWindowToVram(gSoundCheckWindowIds[WIN_C], 2);
+
         gTasks[taskId].func = sub_80BA384;
         REG_WIN0H = WIN_RANGE(17, 223);
         REG_WIN0V = WIN_RANGE(1, 31);
@@ -288,10 +387,26 @@ extern const u8 *const gSENames[];
 void sub_80BA384(u8 taskId) // Task_HandleDrawingSoundCheckMenuText
 {
     HighlightSelectedWindow(gTasks[taskId].tWindowSelected);
-    PrintSoundNumber(gTasks[taskId].tBgmIndex + MUS_STOP, 7, 8); // print by BGM index
-    sub_80BA79C(gBGMNames[gTasks[taskId].tBgmIndex], 11, 8);
-    PrintSoundNumber(gTasks[taskId].tSeIndex, 7, 15);
-    sub_80BA79C(gSENames[gTasks[taskId].tSeIndex], 11, 15);
+    // PrintSoundNumber(gSoundCheckWindowIds[WIN_B], gTasks[taskId].tBgmIndex + MUS_STOP, 7, 8); // print by BGM index
+    // sub_80BA79C(gSoundCheckWindowIds[WIN_B], gBGMNames[gTasks[taskId].tBgmIndex], 11, 8);
+    // PrintSoundNumber(gSoundCheckWindowIds[WIN_C], gTasks[taskId].tSeIndex, 7, 15);
+    // sub_80BA79C(gSoundCheckWindowIds[WIN_C], gSENames[gTasks[taskId].tSeIndex], 11, 15);
+    PrintSoundNumber(gSoundCheckWindowIds[WIN_B], gTasks[taskId].tBgmIndex + MUS_STOP, 14, 16); // print by BGM index
+    sub_80BA79C(gSoundCheckWindowIds[WIN_B], gBGMNames[gTasks[taskId].tBgmIndex], 14+(3*8), 16);
+    PrintSoundNumber(gSoundCheckWindowIds[WIN_C], gTasks[taskId].tSeIndex, 14, 16);
+    sub_80BA79C(gSoundCheckWindowIds[WIN_C], gSENames[gTasks[taskId].tSeIndex], 14+(3*8), 16);
+    //PutWindowTilemap(gSoundCheckWindowIds[MUS_WINDOW]);
+    CopyWindowToVram(gSoundCheckWindowIds[MUS_WINDOW], 2);
+
+    //PutWindowTilemap(gSoundCheckWindowIds[WIN_B]);
+    CopyWindowToVram(gSoundCheckWindowIds[WIN_B], 2);
+
+    //PutWindowTilemap(gSoundCheckWindowIds[WIN_C]);
+    CopyWindowToVram(gSoundCheckWindowIds[WIN_C], 2);
+    
+    DrawMainMenuWindowBorder(&sSoundCheckMUSFrame[0], FRAME_TILE_OFFSET);
+    DrawMainMenuWindowBorder(&sSoundCheckMUSFrame[1], FRAME_TILE_OFFSET);
+    DrawMainMenuWindowBorder(&sSoundCheckMUSFrame[2], FRAME_TILE_OFFSET);
     gTasks[taskId].func = sub_80BA65C;
 }
 
@@ -386,7 +501,7 @@ bool8 Task_ProcessSoundCheckMenuInput(u8 taskId)
             if (gTasks[taskId].tBgmIndex > 0)
                 gTasks[taskId].tBgmIndex--;
             else
-                gTasks[taskId].tBgmIndex = 117;
+                gTasks[taskId].tBgmIndex = (MUS_BATTLE30 - MUS_STOP);
         }
         return TRUE;
     }
@@ -401,7 +516,7 @@ bool8 Task_ProcessSoundCheckMenuInput(u8 taskId)
         }
         else
         {
-            if (gTasks[taskId].tBgmIndex < 117)
+            if (gTasks[taskId].tBgmIndex < MUS_BATTLE30 - MUS_STOP)
                 gTasks[taskId].tBgmIndex++;
             else
                 gTasks[taskId].tBgmIndex = 0;
@@ -450,7 +565,7 @@ void HighlightSelectedWindow(u8 windowType)
     }
 }
 
-void PrintSoundNumber(u16 soundIndex, u16 x, u16 y) // PrintSoundNumber ?
+void PrintSoundNumber(u8 windowId, u16 soundIndex, u16 x, u16 y) // PrintSoundNumber ?
 {
     u8 i;
     u8 str[5];
@@ -477,10 +592,10 @@ void PrintSoundNumber(u16 soundIndex, u16 x, u16 y) // PrintSoundNumber ?
 
     str[2] = ((soundIndex % 100) % 10) + CHAR_0;
     //Menu_PrintText(str, x, y);
-    AddTextPrinterParameterized(gSoundCheckWindowIds[SE_WINDOW], 1, str, x, y, TEXT_SPEED_FF, NULL);
+    AddTextPrinterParameterized(windowId, 1, str, x, y, TEXT_SPEED_FF, NULL);
 }
 
-void sub_80BA79C(const u8 *const string, u16 x, u16 y)
+void sub_80BA79C(u8 windowId, const u8 *const string, u16 x, u16 y)
 {
     u8 i;
     u8 str[11];
@@ -494,58 +609,58 @@ void sub_80BA79C(const u8 *const string, u16 x, u16 y)
         str[i] = string[i];
 
     //Menu_PrintText(str, x, y);
-    AddTextPrinterParameterized(gSoundCheckWindowIds[SE_WINDOW], 1, str, x, y, TEXT_SPEED_FF, NULL);
+    AddTextPrinterParameterized(windowId, 1, str, x, y, TEXT_SPEED_FF, NULL);
 }
 
 void Task_DrawDriverTestMenu(u8 taskId) // Task_DrawDriverTestMenu
 {
     u8 bbackStr[] = DTR("Bぼたんで　もどる", "B BUTTON: BACK");
     u8 aplayStr[] = DTR("Aぼたんで　さいせい", "A BUTTON: PLAY");
-    u8 voiceStr[] = _("VOICE‥‥‥‥");
-    u8 volumeStr[] = _("VOLUME‥‥‥");
-    u8 panpotStr[] = _("PANPOT‥‥‥");
-    u8 pitchStr[] = _("PITCH‥‥‥‥");
-    u8 lengthStr[] = _("LENGTH‥‥‥");
-    u8 releaseStr[] = _("RELEASE‥‥");
-    u8 progressStr[] = _("PROGRESS‥");
-    u8 chorusStr[] = _("CHORUS‥‥‥");
-    u8 priorityStr[] = _("PRIORITY‥");
-    u8 playingStr[] = DTR("さいせいちゆう‥", "PLAYING"); // 再生中 (playing)
-    u8 reverseStr[] = DTR("はんてん‥‥‥‥", "REVERSE"); // 反転 (reverse)
-    u8 stereoStr[] = DTR("すてれお‥‥‥‥", "STEREO"); // stereo
+    u8 voiceStr[] = _("VOICE....");
+    u8 volumeStr[] = _("VOLUME...");
+    u8 panpotStr[] = _("PANPOT...");
+    u8 pitchStr[] = _("PITCH....");
+    u8 lengthStr[] = _("LENGTH...");
+    u8 releaseStr[] = _("RELEASE..");
+    u8 progressStr[] = _("PROGRESS.");
+    u8 chorusStr[] = _("CHORUS...");
+    u8 priorityStr[] = _("PRIORITY.");
+    u8 playingStr[] = DTR("さいせいちゆう.", "PLAYING"); // 再生中 (playing)
+    u8 reverseStr[] = DTR("はんてん....", "REVERSE"); // 反転 (reverse)
+    u8 stereoStr[] = DTR("すてれお....", "STEREO"); // stereo
 
-    REG_DISPCNT = 0x3140;
+    SetGpuReg(REG_DISPCNT, 0x3140);
     //Menu_DrawStdWindowFrame(0, 0, 29, 19);
-    gSoundCheckWindowIds[SE_WINDOW] = AddWindowWithoutTileMap(sSoundCheckSEFrame);
-    DrawStdWindowFrame(gSoundCheckWindowIds[SE_WINDOW], FALSE);
+    gSoundCheckWindowIds[CRY_A] = AddWindow(sSoundCheckSEFrame);
+    //DrawStdWindowFrame(gSoundCheckWindowIds[SE_WINDOW], FALSE);
     //Menu_PrintText(bbackStr, 19, 4);
-    AddTextPrinterParameterized(gSoundCheckWindowIds[SE_WINDOW], 1, bbackStr, 19, 4, TEXT_SPEED_FF, NULL);
+    AddTextPrinterParameterized(gSoundCheckWindowIds[CRY_A], 1, bbackStr, 19, 4, TEXT_SPEED_FF, NULL);
     //Menu_PrintText(aplayStr, 19, 2);
-    AddTextPrinterParameterized(gSoundCheckWindowIds[SE_WINDOW], 1, aplayStr, 19, 2, TEXT_SPEED_FF, NULL);
+    AddTextPrinterParameterized(gSoundCheckWindowIds[CRY_A], 1, aplayStr, 19, 2, TEXT_SPEED_FF, NULL);
     //Menu_PrintText(voiceStr, 2, 1);
-    AddTextPrinterParameterized(gSoundCheckWindowIds[SE_WINDOW], 1, voiceStr, 2, 1, TEXT_SPEED_FF, NULL);
+    AddTextPrinterParameterized(gSoundCheckWindowIds[CRY_A], 1, voiceStr, 2, 1, TEXT_SPEED_FF, NULL);
     //Menu_PrintText(volumeStr, 2, 3);
-    AddTextPrinterParameterized(gSoundCheckWindowIds[SE_WINDOW], 1, volumeStr, 2, 3, TEXT_SPEED_FF, NULL);
+    AddTextPrinterParameterized(gSoundCheckWindowIds[CRY_A], 1, volumeStr, 2, 3, TEXT_SPEED_FF, NULL);
     //Menu_PrintText(panpotStr, 2, 5);
-    AddTextPrinterParameterized(gSoundCheckWindowIds[SE_WINDOW], 1, panpotStr, 2, 5, TEXT_SPEED_FF, NULL);
+    AddTextPrinterParameterized(gSoundCheckWindowIds[CRY_A], 1, panpotStr, 2, 5, TEXT_SPEED_FF, NULL);
     //Menu_PrintText(pitchStr, 2, 7);
-    AddTextPrinterParameterized(gSoundCheckWindowIds[SE_WINDOW], 1, pitchStr, 2, 7, TEXT_SPEED_FF, NULL);
+    AddTextPrinterParameterized(gSoundCheckWindowIds[CRY_A], 1, pitchStr, 2, 7, TEXT_SPEED_FF, NULL);
     //Menu_PrintText(lengthStr, 2, 9);
-    AddTextPrinterParameterized(gSoundCheckWindowIds[SE_WINDOW], 1, lengthStr, 2, 9, TEXT_SPEED_FF, NULL);
+    AddTextPrinterParameterized(gSoundCheckWindowIds[CRY_A], 1, lengthStr, 2, 9, TEXT_SPEED_FF, NULL);
     //Menu_PrintText(releaseStr, 2, 11);
-    AddTextPrinterParameterized(gSoundCheckWindowIds[SE_WINDOW], 1, releaseStr, 2, 11, TEXT_SPEED_FF, NULL);
+    AddTextPrinterParameterized(gSoundCheckWindowIds[CRY_A], 1, releaseStr, 2, 11, TEXT_SPEED_FF, NULL);
     //Menu_PrintText(progressStr, 2, 13);
-    AddTextPrinterParameterized(gSoundCheckWindowIds[SE_WINDOW], 1, progressStr, 2, 13, TEXT_SPEED_FF, NULL);
+    AddTextPrinterParameterized(gSoundCheckWindowIds[CRY_A], 1, progressStr, 2, 13, TEXT_SPEED_FF, NULL);
     //Menu_PrintText(chorusStr, 2, 15);
-    AddTextPrinterParameterized(gSoundCheckWindowIds[SE_WINDOW], 1, chorusStr, 2, 15, TEXT_SPEED_FF, NULL);
+    AddTextPrinterParameterized(gSoundCheckWindowIds[CRY_A], 1, chorusStr, 2, 15, TEXT_SPEED_FF, NULL);
     //Menu_PrintText(priorityStr, 2, 17);
-    AddTextPrinterParameterized(gSoundCheckWindowIds[SE_WINDOW], 1, priorityStr, 2, 17, TEXT_SPEED_FF, NULL);
+    AddTextPrinterParameterized(gSoundCheckWindowIds[CRY_A], 1, priorityStr, 2, 17, TEXT_SPEED_FF, NULL);
     //Menu_PrintText(playingStr, 19, 16);
-    AddTextPrinterParameterized(gSoundCheckWindowIds[SE_WINDOW], 1, playingStr, 19, 16, TEXT_SPEED_FF, NULL);
+    AddTextPrinterParameterized(gSoundCheckWindowIds[CRY_A], 1, playingStr, 19, 16, TEXT_SPEED_FF, NULL);
     //Menu_PrintText(reverseStr, 19, 14);
-    AddTextPrinterParameterized(gSoundCheckWindowIds[SE_WINDOW], 1, reverseStr, 19, 14, TEXT_SPEED_FF, NULL);
+    AddTextPrinterParameterized(gSoundCheckWindowIds[CRY_A], 1, reverseStr, 19, 14, TEXT_SPEED_FF, NULL);
     //Menu_PrintText(stereoStr, 19, 12);
-    AddTextPrinterParameterized(gSoundCheckWindowIds[SE_WINDOW], 1, bbackStr, 19, 12, TEXT_SPEED_FF, NULL);
+    AddTextPrinterParameterized(gSoundCheckWindowIds[CRY_A], 1, bbackStr, 19, 12, TEXT_SPEED_FF, NULL);
     REG_WIN0H = WIN_RANGE(0, DISPLAY_WIDTH);
     REG_WIN0V = WIN_RANGE(0, DISPLAY_HEIGHT);
     sDriverTestSelection = 0;
@@ -565,6 +680,10 @@ void Task_DrawDriverTestMenu(u8 taskId) // Task_DrawDriverTestMenu
     sSoundTestParams[CRY_TEST_PRIORITY] = 2;
     PrintDriverTestMenuText();
     sub_80BAE10(0, 0);
+
+    PutWindowTilemap(gSoundCheckWindowIds[CRY_A]);
+    CopyWindowToVram(gSoundCheckWindowIds[CRY_A], 3);
+
     gTasks[taskId].func = Task_ProcessDriverTestInput;
 }
 
@@ -575,8 +694,8 @@ void Task_ProcessDriverTestInput(u8 taskId)
         REG_DISPCNT = 0x7140;
         REG_WIN0H = WIN_RANGE(17, 223);
         REG_WIN0V = WIN_RANGE(1, 31);
-        ClearStdWindowAndFrame(gSoundCheckWindowIds[SE_WINDOW], TRUE);
-        RemoveWindow(gSoundCheckWindowIds[SE_WINDOW]);
+        ClearStdWindowAndFrame(gSoundCheckWindowIds[CRY_A], TRUE);
+        RemoveWindow(gSoundCheckWindowIds[CRY_A]);
         //Menu_EraseWindowRect(0, 0, 29, 19);
         gTasks[taskId].func = Task_InitSoundCheckMenu;
         return;
@@ -790,7 +909,7 @@ void PrintSignedNumber(int n, u16 x, u16 y, u8 digits)
     }
 
     //Menu_PrintText(str, x, y);
-    AddTextPrinterParameterized(gSoundCheckWindowIds[SE_WINDOW], 1, str, 3, 2, TEXT_SPEED_FF, NULL);
+    AddTextPrinterParameterized(gSoundCheckWindowIds[CRY_A], 1, str, 3, 2, TEXT_SPEED_FF, NULL);
 }
 
 static const s8 gUnknown_083D03F8[5] = { 0x3F, 0x00, 0xC0, 0x7F, 0x80 };
@@ -799,11 +918,12 @@ void sub_80BAF84(u8 taskId)
 {
     u8 seStr[] = _("SE");
     u8 panStr[] = _("PAN");
-    u8 playingStr[] = DTR("さいせいちゆう‥", "PLAYING");
+    u8 playingStr[] = DTR("さいせいちゆう.", "PLAYING");
 
     REG_DISPCNT = 0x3140;
     //Menu_DrawStdWindowFrame(0, 0, 29, 19);
-    gSoundCheckWindowIds[SE_WINDOW] = AddWindowWithoutTileMap(sSoundCheckSEFrame);
+    //InitWindows(sSoundCheckSEFrame);
+    //gSoundCheckWindowIds[SE_WINDOW] = 1;
     DrawStdWindowFrame(gSoundCheckWindowIds[SE_WINDOW], FALSE);
     //Menu_PrintText(seStr, 3, 2);
     AddTextPrinterParameterized(SE_WINDOW, 1, seStr, 3, 2, TEXT_SPEED_FF, NULL);
@@ -857,8 +977,8 @@ void sub_80BB038(u8 taskId)
         REG_DISPCNT = 0x7140;
         REG_WIN0H = WIN_RANGE(17, 223);
         REG_WIN0V = WIN_RANGE(1, 31);
-        ClearStdWindowAndFrame(gSoundCheckWindowIds[SE_WINDOW], TRUE);
-        RemoveWindow(gSoundCheckWindowIds[SE_WINDOW]);
+        ClearStdWindowAndFrame(gSoundCheckWindowIds[CRY_A], TRUE);
+        RemoveWindow(gSoundCheckWindowIds[CRY_A]);
         //Menu_EraseWindowRect(0, 0, 29, 19);
         gTasks[taskId].func = Task_InitSoundCheckMenu;
         return;
@@ -1049,6 +1169,23 @@ void sub_80BB1D4(void)
 	X(MUS_DAIGO, "DAIGO") \
 	X(MUS_THANKFOR, "THANKFOR") \
 	X(MUS_END, "END") \
+X(MUS_B_FRONTIER, "B-FRONTI") \
+X(MUS_B_ARENA, "B-ARENA") \
+X(MUS_ME_POINTGET, "ME-POINT") \
+X(MUS_ME_TORE_EYE, "ME-TOREY") \
+X(MUS_PYRAMID, "PYRAMID") \
+X(MUS_PYRAMID_TOP, "PYRAMID-T") \
+X(MUS_B_PALACE, "B-PALACE") \
+X(MUS_REKKUU_KOURIN, "REKKUU-K") \
+X(MUS_SATTOWER, "SATTOWER") \
+X(MUS_ME_SYMBOLGET, "ME-SYMBL") \
+X(MUS_B_DOME, "B-DOME") \
+X(MUS_B_TUBE, "B-TUBE") \
+X(MUS_B_FACTORY, "B-FACTOR") \
+X(MUS_VS_REKKU, "VS-REKKU") \
+X(MUS_VS_FRONT, "VS-FRONT") \
+X(MUS_VS_MEW, "VS-MEW") \
+    X(MUS_B_DOME1, "B-DOME1") \
 	X(MUS_BATTLE27, "BATTLE27") \
 	X(MUS_BATTLE31, "BATTLE31") \
 	X(MUS_BATTLE20, "BATTLE20") \
@@ -1356,7 +1493,9 @@ void Task_InitCryTest(u8 taskId)
     //gUnknown_03005E98 = 0;
     gDexCryScreenState = 0;
 
-    while (sub_8119E3C(&cryStruct, 3) == FALSE)
+    //while (sub_8119E3C(&cryStruct, 3) == FALSE)
+    //    ;
+    while (sub_8145354(&cryStruct, 3) == FALSE)
         ;
 
     cryStruct2.unk0 = 0;
@@ -1369,12 +1508,23 @@ void Task_InitCryTest(u8 taskId)
     //gUnknown_03005E98 = 0;
     gDexCryScreenState = 0;
 
-    while (ShowPokedexCryScreen(&cryStruct2, 2) == FALSE)
+    //while (ShowPokedexCryScreen(&cryStruct2, 2) == FALSE)
+    //    ;
+    while (sub_8145850(&cryStruct2, 2) == FALSE)
         ;
 
     //Menu_DrawStdWindowFrame(0, 16, 5, 19);
-    DrawStdFrameWithCustomTileAndPalette(gSoundCheckWindowIds[SE_WINDOW], FALSE, 1, 1);
+    //ClearStdWindowAndFrameToTransparent(gSoundCheckWindowIds[WIN_A], TRUE);
+    //ClearStdWindowAndFrameToTransparent(gSoundCheckWindowIds[WIN_B], TRUE);
+    //ClearStdWindowAndFrameToTransparent(gSoundCheckWindowIds[WIN_C], TRUE);
+    HideBg(0);
+    ShowBg(1);
+    gSoundCheckWindowIds[CRY_A] = AddWindow(&sSoundCheckSEFrame[1]);
+    //DrawStdFrameWithCustomTileAndPalette(gSoundCheckWindowIds[CRY_A], FALSE, 1, 1);
+    PutWindowTilemap(gSoundCheckWindowIds[CRY_A]);
     PrintCryNumber();
+    CopyWindowToVram(gSoundCheckWindowIds[CRY_A], 2);
+    DrawMainMenuWindowBorder(&sSoundCheckSEFrame[1], FRAME_TILE_OFFSET);
     BeginNormalPaletteFade(0xFFFFFFFF, 0, 16, 0, RGB(0, 0, 0));
     REG_BG2HOFS = 0;
     REG_BG2VOFS = 0;
@@ -1387,11 +1537,13 @@ void Task_InitCryTest(u8 taskId)
 
 void Task_ProcessCryTestInput(u8 taskId)
 {
-    sub_8119F88(3);
+    //sub_8119F88(3);
+    sub_814545C(3);
 
     if (gMain.newKeys & A_BUTTON)
     {
-        sub_811A050(gSoundTestCryNum);
+        //sub_811A050(gSoundTestCryNum);
+        sub_8145534(gSoundTestCryNum);
     }
     if (gMain.newKeys & R_BUTTON)
     {
@@ -1414,11 +1566,14 @@ void Task_ProcessCryTestInput(u8 taskId)
         REG_DISPCNT = 0x7140;
         REG_WIN0H = WIN_RANGE(17, 223);
         REG_WIN0V = WIN_RANGE(1, 31);
-        ClearStdWindowAndFrame(gSoundCheckWindowIds[SE_WINDOW], TRUE);
-        RemoveWindow(gSoundCheckWindowIds[SE_WINDOW]);
+        ClearStdWindowAndFrame(gSoundCheckWindowIds[CRY_A], TRUE);
+        RemoveWindow(gSoundCheckWindowIds[CRY_A]);
+        ClearStdWindowAndFrame(gSoundCheckWindowIds[CRY_B], TRUE);
+        RemoveWindow(gSoundCheckWindowIds[CRY_B]);
         //Menu_EraseWindowRect(0, 0, 29, 19);
         gTasks[taskId].func = Task_InitSoundCheckMenu;
-        DestroyCryMeterNeedleSprite();
+        //DestroyCryMeterNeedleSprite();
+        sub_8145914();
     }
 }
 
@@ -1429,9 +1584,45 @@ void PrintCryNumber(void)
 
 static void InitSoundCheckScreenWindows(void)
 {
-    InitWindows(sSoundCheckMUSFrame);
-    DeactivateAllTextPrinters();
-    FillWindowPixelBuffer(0, PIXEL_FILL(0));
-    LoadWindowGfx(0, 0, 2, 224);
-    LoadPalette(gUnknown_0860F074, 0xF0, 0x20);
+    //InitWindows(sSoundCheckMUSFrame);
+    //gSoundCheckWindowIds[MUS_WINDOW] = AddWindow(&sSoundCheckMUSFrame[0]);
+    //FillWindowPixelBuffer(gSoundCheckWindowIds[MUS_WINDOW], PIXEL_FILL(0xF));
+    //LoadWindowGfx(gSoundCheckWindowIds[MUS_WINDOW], 0, 1, 224);
+    //gSoundCheckWindowIds[WIN_B] = AddWindow(&sSoundCheckMUSFrame[1]);
+    //FillWindowPixelBuffer(gSoundCheckWindowIds[WIN_B], PIXEL_FILL(0xF));
+    //LoadWindowGfx(gSoundCheckWindowIds[WIN_B], 0, 2, 224);
+    //gSoundCheckWindowIds[WIN_C] = AddWindow(&sSoundCheckMUSFrame[2]);
+    //LoadWindowGfx(gSoundCheckWindowIds[WIN_C], 0, 2, 224);
+    //FillWindowPixelBuffer(gSoundCheckWindowIds[WIN_C], PIXEL_FILL(0xF));
+    //LoadPalette(gUnknown_0860F074, 0xF0, 0x20);
+    //gSoundCheckWindowIds[MUS_WINDOW] = 0;
+    //gSoundCheckWindowIds[WIN_B] = 1;
+    //gSoundCheckWindowIds[WIN_C] = 2;
+}
+
+static void LoadSoundCheckWindowFrameTiles(u8 bgId, u16 tileOffset)
+{
+    LoadBgTiles(bgId, GetWindowFrameTilesPal(0)->tiles, 0x120, tileOffset);
+    LoadPalette(GetWindowFrameTilesPal(0)->pal, 32, 32);
+}
+
+static void DrawMainMenuWindowBorder(const struct WindowTemplate *template, u16 baseTileNum)
+{
+    u16 r9 = 1 + baseTileNum;
+    u16 r10 = 2 + baseTileNum;
+    u16 sp18 = 3 + baseTileNum;
+    u16 spC = 5 + baseTileNum;
+    u16 sp10 = 6 + baseTileNum;
+    u16 sp14 = 7 + baseTileNum;
+    u16 r6 = 8 + baseTileNum;
+
+    FillBgTilemapBufferRect(template->bg, baseTileNum, template->tilemapLeft - 1, template->tilemapTop - 1, 1, 1, 2);
+    FillBgTilemapBufferRect(template->bg, r9, template->tilemapLeft, template->tilemapTop - 1, template->width, 1, 2);
+    FillBgTilemapBufferRect(template->bg, r10, template->tilemapLeft + template->width, template->tilemapTop - 1, 1, 1, 2);
+    FillBgTilemapBufferRect(template->bg, sp18, template->tilemapLeft - 1, template->tilemapTop, 1, template->height, 2);
+    FillBgTilemapBufferRect(template->bg, spC, template->tilemapLeft + template->width, template->tilemapTop, 1, template->height, 2);
+    FillBgTilemapBufferRect(template->bg, sp10, template->tilemapLeft - 1, template->tilemapTop + template->height, 1, 1, 2);
+    FillBgTilemapBufferRect(template->bg, sp14, template->tilemapLeft, template->tilemapTop + template->height, template->width, 1, 2);
+    FillBgTilemapBufferRect(template->bg, r6, template->tilemapLeft + template->width, template->tilemapTop + template->height, 1, 1, 2);
+    CopyBgTilemapBufferToVram(template->bg);
 }
