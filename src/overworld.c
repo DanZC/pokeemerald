@@ -66,6 +66,10 @@
 #include "constants/species.h"
 #include "constants/trainer_hill.h"
 #include "constants/weather.h"
+#if DEBUG
+#include "debug.h"
+#include "constants/rgb.h"
+#endif //DEBUG
 
 #define PLAYER_TRADING_STATE_IDLE 0x80
 #define PLAYER_TRADING_STATE_BUSY 0x81
@@ -1426,6 +1430,71 @@ void CleanupOverworldWindowsAndTilemaps(void)
     if (gBGTilemapBuffers2)
         FREE_AND_SET_NULL(gBGTilemapBuffers2);
 }
+
+#if DEBUG
+
+void debug_sub_8076B68(void);
+
+void debug_sub_80589D8(void);
+
+void debug_sub_8058A50(void);
+
+void CB2_InitTestMenu(void)
+{
+    m4aSoundVSyncOff();
+    SetVBlankCallback(NULL);
+    DmaFill32(3, 0, (void *) VRAM, VRAM_SIZE);
+    DmaFill32(3, 0, (void *) PLTT, PLTT_SIZE);
+    ResetPaletteFade();
+    ResetSpriteData();
+    ResetTasks();
+    ScanlineEffect_Stop();
+    //Text_LoadWindowTemplate(&gMenuTextWindowTemplate);
+    //InitMenuWindow(&gMenuTextWindowTemplate);
+    //debug_sub_8076B68();
+    BeginNormalPaletteFade(0xFFFFFFFF, 0, 16, 0, RGB(0, 0, 0));
+    REG_IE |= 1;
+    REG_DISPCNT = DISPCNT_OBJ_ON | DISPCNT_BG0_ON | DISPCNT_OBJ_1D_MAP;
+    m4aSoundVSyncOn();
+    SetVBlankCallback(debug_sub_8058A50);
+    //m4aSongNumStart(0x19D);
+    //m4aSongNumStart(MUS_TITLE3);
+    //SetMainCallback2(debug_sub_80589D8);
+    SetMainCallback2(CB2_StartSoundCheckMenu);
+    //Crash(sTextCrash);
+}
+
+void debug_sub_80589D8(void)
+{
+    if (UpdatePaletteFade())
+        return;
+
+    RunTasks();
+    AnimateSprites();
+    BuildOamBuffer();
+}
+
+void debug_sub_80589F4(void)
+{
+    if (UpdatePaletteFade())
+        return;
+
+    SetVBlankCallback(NULL);
+
+    DmaFill32(3, 0, (void *) VRAM, VRAM_SIZE);
+    DmaFill32(3, 0, (void *) PLTT, PLTT_SIZE);
+
+    SetMainCallback2(gMain.savedCallback);
+}
+
+void debug_sub_8058A50(void)
+{
+    ProcessSpriteCopyRequests();
+    LoadOam();
+    TransferPlttBuffer();
+}
+
+#endif
 
 static void ResetSafariZoneFlag_(void)
 {

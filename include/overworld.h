@@ -146,6 +146,9 @@ void CB2_ReturnToFieldContinueScript(void);
 void CB2_ReturnToFieldContinueScriptPlayMapMusic(void);
 void sub_80861E8(void);
 void CB2_ContinueSavedGame(void);
+#if DEBUG
+void CB2_InitTestMenu(void);
+#endif
 void ResetAllMultiplayerState(void);
 u32 sub_8087214(void);
 bool32 sub_808727C(void);

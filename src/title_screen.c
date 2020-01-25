@@ -20,7 +20,11 @@
 #include "gpu_regs.h"
 #include "trig.h"
 #include "graphics.h"
+#if DEBUG
+#include "debug.h"
+#include "overworld.h"
 #include "constants/rgb.h"
+#endif
 #include "constants/songs.h"
 
 #define VERSION_BANNER_RIGHT_TILEOFFSET 64
@@ -43,6 +47,9 @@ static void Task_TitleScreenPhase1(u8);
 static void Task_TitleScreenPhase2(u8);
 static void Task_TitleScreenPhase3(u8);
 static void CB2_GoToMainMenu(void);
+#if DEBUG
+static void CB2_GoToTestMenu(void);
+#endif
 static void CB2_GoToClearSaveDataScreen(void);
 static void CB2_GoToResetRtcScreen(void);
 static void CB2_GoToBerryFixScreen(void);
@@ -728,6 +735,13 @@ static void Task_TitleScreenPhase3(u8 taskId)
         BeginNormalPaletteFade(0xFFFFFFFF, 0, 0, 0x10, RGB_WHITEALPHA);
         SetMainCallback2(CB2_GoToMainMenu);
     }
+    #if DEBUG
+    else if ((gMain.heldKeys & SELECT_BUTTON) == SELECT_BUTTON)
+    {
+        BeginNormalPaletteFade(0xFFFFFFFF, 0, 0, 0x10, RGB_BLACK);
+        SetMainCallback2(CB2_GoToTestMenu);
+    }
+    #endif
     else if ((gMain.heldKeys & CLEAR_SAVE_BUTTON_COMBO) == CLEAR_SAVE_BUTTON_COMBO)
     {
         SetMainCallback2(CB2_GoToClearSaveDataScreen);
@@ -770,6 +784,14 @@ static void CB2_GoToMainMenu(void)
     if (!UpdatePaletteFade())
         SetMainCallback2(CB2_InitMainMenu);
 }
+
+#if DEBUG
+static void CB2_GoToTestMenu(void)
+{
+    if (!UpdatePaletteFade())
+        SetMainCallback2(CB2_InitTestMenu);
+}
+#endif
 
 static void CB2_GoToCopyrightScreen(void)
 {
