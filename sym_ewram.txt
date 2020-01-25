@@ -142,6 +142,7 @@
 	.include "src/pokenav.o"
 	.include "src/pokenav_match_call_ui.o"
 	.include "src/menu_specialized.o"
+	.include "src/debug/sound_check_menu.o"
 	.include "src/faraway_island.o"
 	.include "src/trainer_hill.o"
 	.include "src/rayquaza_scene.o"
