@@ -1,0 +1,27 @@
+mapscripts TestMap_MapScripts {}
+
+script TestMap_EventScript_WelcomeBoy {
+    lock
+    faceplayer
+    msgbox("Welcome to the TEST MAP.\pHow do you like the graphics?")
+    release
+    end
+}
+
+script TestMap_EventScript_Sign {
+    msgbox("This is a sign.", MSGBOX_SIGN)
+    end
+}
+
+script TestMap_EventScript_Sign2 {
+    msgbox("This is a gym sign.", MSGBOX_SIGN)
+    end
+}
+
+script TestMap_EventScript_GymBlocker {
+    lock
+    faceplayer
+    msgbox("This gym is not ready yet.\nCome back later.")
+    release
+    end
+}

@@ -99,7 +99,7 @@ static const struct CombinedMove sCombinedMoves[2] =
 
 const u16 gSpeciesToHoennPokedexNum[NUM_SPECIES] = // Assigns all species to the Hoenn Dex Index (Summary No. for Hoenn Dex)
 {
-    SPECIES_TO_HOENN(TREECKO),
+    SPECIES_TO_HOENN(EEVEE),
     SPECIES_TO_HOENN(GROVYLE),
     SPECIES_TO_HOENN(SCEPTILE),
     SPECIES_TO_HOENN(TORCHIC),
@@ -1158,7 +1158,7 @@ const u16 gSpeciesToNationalPokedexNum[NUM_SPECIES] = // Assigns all species to 
 
 const u16 gHoennToNationalOrder[HOENN_DEX_COUNT] = // Assigns Hoenn Dex Pokémon (Using National Dex Index)
 {
-    HOENN_TO_NATIONAL(TREECKO),
+    HOENN_TO_NATIONAL(EEVEE),
     HOENN_TO_NATIONAL(GROVYLE),
     HOENN_TO_NATIONAL(SCEPTILE),
     HOENN_TO_NATIONAL(TORCHIC),
@@ -6401,7 +6401,7 @@ u16 GetBattleBGM(void)
         case TRAINER_CLASS_MAGMA_ADMIN:
             return MUS_VS_AQUA_MAGMA;
         case TRAINER_CLASS_LEADER:
-            return MUS_VS_GYM_LEADER;
+            return MUS_RG_VS_GYM_LEADER;
         case TRAINER_CLASS_CHAMPION:
             return MUS_VS_CHAMPION;
         case TRAINER_CLASS_PKMN_TRAINER_3:
@@ -6421,11 +6421,11 @@ u16 GetBattleBGM(void)
         case TRAINER_CLASS_PYRAMID_KING:
             return MUS_VS_FRONTIER_BRAIN;
         default:
-            return MUS_VS_TRAINER;
+            return MUS_RG_VS_TRAINER;
         }
     }
     else
-        return MUS_VS_WILD;
+        return MUS_RG_VS_WILD; //MUS_VS_WILD;
 }
 
 void PlayBattleBGM(void)

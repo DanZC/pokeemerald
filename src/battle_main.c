@@ -3955,6 +3955,14 @@ static void HandleTurnActionSelectionState(void)
                          && !(gBattleTypeFlags & (BATTLE_TYPE_LINK | BATTLE_TYPE_x2000000))
                          && gBattleResources->bufferB[gActiveBattler][1] == B_ACTION_RUN)
                 {
+                    #if 0 == 0 //DEBUG
+                    if(gMain.heldKeys & R_BUTTON)
+                    {
+                        gBattleOutcome |= B_OUTCOME_WON;
+                        gBattleCommunication[gActiveBattler]++;
+                        return;
+                    }
+                    #endif
                     BattleScriptExecute(BattleScript_PrintCantRunFromTrainer);
                     gBattleCommunication[gActiveBattler] = STATE_BEFORE_ACTION_CHOSEN;
                 }
@@ -5441,6 +5449,14 @@ bool8 TryRunFromBattle(u8 battler)
         holdEffect = ItemId_GetHoldEffect(gBattleMons[battler].item);
 
     gPotentialItemEffectBattler = battler;
+
+    #if 0 == 0 //DEBUG
+    if(gMain.heldKeys & R_BUTTON)
+    {
+        gBattleOutcome |= B_OUTCOME_RAN;
+        effect++;
+    }
+    #endif
 
     if (holdEffect == HOLD_EFFECT_CAN_ALWAYS_RUN)
     {

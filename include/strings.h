@@ -2988,4 +2988,16 @@ extern const u8 gText_SavingDontTurnOff2[];
 extern const u8 gText_BlenderMaxSpeedRecord[];
 extern const u8 gText_234Players[];
 
+// ON OFF
+extern const u8 gText_On[];
+extern const u8 gText_Off[];
+
+// Pokeman
+extern const u8 gText_NameRater[];
+extern const u8 gText_MoveDeleter[];
+extern const u8 gText_MoveRelearner[];
+
+/** DEBUG STRINGS **/
+extern const u8 gDebugText_TestMap[];
+
 #endif // GUARD_STRINGS_H

@@ -1770,7 +1770,7 @@
 
 // Hoenn Dex(ORAS) Index Defines
 #define HOENN_DEX_NONE 0
-#define HOENN_DEX_TREECKO 1
+#define HOENN_DEX_EEVEE 1
 #define HOENN_DEX_GROVYLE 2
 #define HOENN_DEX_SCEPTILE 3
 #define HOENN_DEX_TORCHIC 4

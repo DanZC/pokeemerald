@@ -55,44 +55,89 @@ enum
  * "light colour".                                                  */
 const struct LightingColour gLightingColours[] =
 {
+    // {
+    //     .paletteNum = 0,
+    //     .colourNum = 1,
+    //     .lightColour = RGB2(30, 30, 5),
+    // },
+    // {
+    //     .paletteNum = 0,
+    //     .colourNum = 2,
+    //     .lightColour = RGB2(26, 25, 4),
+    // },
+    // {
+    //     .paletteNum = 0,
+    //     .colourNum = 3,
+    //     .lightColour = RGB2(22, 21, 3),
+    // },
+    // {
+    //     .paletteNum = 1,
+    //     .colourNum = 10,
+    //     .lightColour = RGB2(30, 30, 5),
+    // },
+    // {
+    //     .paletteNum = 1,
+    //     .colourNum = 2,
+    //     .lightColour = RGB2(26, 25, 4),
+    // },
+    // {
+    //     .paletteNum = 6,
+    //     .colourNum = 1,
+    //     .lightColour = RGB2(30, 30, 5),
+    // },
     {
-        .paletteNum = 0,
-        .colourNum = 1,
-        .lightColour = RGB2(30, 30, 5),
-    },
-    {
-        .paletteNum = 0,
-        .colourNum = 2,
-        .lightColour = RGB2(26, 25, 4),
-    },
-    {
-        .paletteNum = 0,
-        .colourNum = 3,
+        .paletteNum = 5,
+        .colourNum = 4,
         .lightColour = RGB2(22, 21, 3),
     },
     {
-        .paletteNum = 1,
-        .colourNum = 1,
+        .paletteNum = 5,
+        .colourNum = 12,
         .lightColour = RGB2(30, 30, 5),
     },
     {
-        .paletteNum = 1,
-        .colourNum = 2,
+        .paletteNum = 5,
+        .colourNum = 14,
+        .lightColour = RGB2(26, 25, 4),
+    },
+    {
+        .paletteNum = 5,
+        .colourNum = 15,
+        .lightColour = RGB2(30, 30, 5),
+    },
+    {
+        .paletteNum = 6,
+        .colourNum = 9,
         .lightColour = RGB2(26, 25, 4),
     },
     {
         .paletteNum = 6,
-        .colourNum = 1,
-        .lightColour = RGB2(30, 30, 5),
+        .colourNum = 10,
+        .lightColour = RGB2(22, 21, 3),
     },
     {
-        .paletteNum = 6,
-        .colourNum = 2,
+        .paletteNum = 7,
+        .colourNum = 13,
+        .lightColour = RGB2(22, 21, 3),
+    },
+    {
+        .paletteNum = 7,
+        .colourNum = 14,
         .lightColour = RGB2(26, 25, 4),
     },
     {
-        .paletteNum = 6,
-        .colourNum = 3,
+        .paletteNum = 7,
+        .colourNum = 15,
+        .lightColour = RGB2(30, 30, 5),
+    },
+    {
+        .paletteNum = 8,
+        .colourNum = 9,
+        .lightColour = RGB2(26, 25, 4),
+    },
+    {
+        .paletteNum = 8,
+        .colourNum = 10,
         .lightColour = RGB2(22, 21, 3),
     },
 };

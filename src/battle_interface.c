@@ -491,7 +491,7 @@ static const struct SpritePalette sStatusSummaryBarSpritePal =
 
 static const struct SpritePalette sStatusSummaryBallsSpritePal =
 {
-    gBattleInterface_BallDisplayPal, TAG_STATUS_SUMMARY_BALLS_PAL
+    gBattleInterface_BallDisplayOldPal, TAG_STATUS_SUMMARY_BALLS_PAL
 };
 
 static const struct SpriteSheet sStatusSummaryBallsSpriteSheet =

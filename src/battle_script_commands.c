@@ -11744,7 +11744,11 @@ static void Cmd_handleballthrow(void)
             }
         }
 
+        #if 0 == 0 //DEBUG
+        if (odds > 254 || (gMain.heldKeys & R_BUTTON)) // mon caught
+        #else
         if (odds > 254) // mon caught
+        #endif
         {
             BtlController_EmitBallThrowAnim(0, BALL_3_SHAKES_SUCCESS);
             MarkBattlerForControllerExec(gActiveBattler);

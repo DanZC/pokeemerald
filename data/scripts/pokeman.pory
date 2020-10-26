@@ -1,0 +1,221 @@
+script Common_EventScript_Pokeman {
+    lock
+    faceplayer
+    message(format("I'm the POKeMAN. …Or at least that's what people call me.\pI offer a variety of services to Trainers such as yourself.\pWhat can I do for you?"))
+    goto(Common_EventScript_Pokeman_MainLoop)
+} 
+
+script(local) Common_EventScript_Pokeman_MainLoop {
+    waitmessage
+    multichoice(16, 0, MULTI_POKEMAN, 0)
+    switch(var(VAR_RESULT)) {
+        case 0: //CHANGE NICKNAME
+            call(Common_EventScript_Pokeman_NameRater)
+        case 1: //DELETE MOVE
+            call(Common_EventScript_Pokeman_MoveDeleter)
+        case 2: //RELEARN MOVE
+            call(Common_EventScript_Pokeman_MoveRelearner)
+        default: //CANCEL
+            goto(Common_EventScript_Pokeman_End)
+    }
+    message(format("Is there anything else I can help you with?"))
+    goto(Common_EventScript_Pokeman_MainLoop)
+}
+
+script(local) Common_EventScript_Pokeman_End {
+    msgbox(format("If you need my services in the future, I'll be in any POKeMON CENTER."))
+    release
+    end
+}
+
+script Common_EventScript_Pokeman_NameRater {
+    msgbox(NameRater_Text_CritiqueWhichMonNickname, MSGBOX_DEFAULT)
+	special(ChoosePartyMon)
+	waitstate
+	if(var(VAR_0x8004) != 255) {
+        specialvar(VAR_RESULT, ScriptGetPartyMonSpecies)
+        if(var(VAR_RESULT) == SPECIES_EGG) {
+            msgbox(NameRater_Text_ThatIsMerelyAnEgg, MSGBOX_DEFAULT)
+            return
+        }
+        // special(BufferMonNickname)
+        // special(IsMonOTIDNotPlayers)
+        // if(var(VAR_RESULT) == TRUE)
+        //     goto SlateportCity_NameRatersHouse_EventScript_PlayerNotMonsOT
+        // specialvar(VAR_RESULT, MonOTNameNotPlayer)
+        special(BufferMonNickname)
+        // if(var(VAR_RESULT) == TRUE)
+        //     goto SlateportCity_NameRatersHouse_EventScript_PlayerNotMonsOT
+        msgbox(NameRater_Text_FineNameSuggestBetterOne, MSGBOX_YESNO)
+        if(var(VAR_RESULT) == YES) {
+	        msgbox(NameRater_Text_WhatShallNewNameBe, MSGBOX_DEFAULT)
+            call(Common_EventScript_NameReceivedPartyMon)
+            specialvar(VAR_RESULT, TryPutNameRaterShowOnTheAir)
+            special(BufferMonNickname)
+            if(var(VAR_RESULT) == TRUE) {
+                msgbox(NameRater_Text_MonShallBeKnownAsName, MSGBOX_DEFAULT)
+            }
+            else {
+                msgbox(NameRater_Text_NameNoDifferentYetSuperior, MSGBOX_DEFAULT)
+            }
+            return
+        }
+        else {
+            return
+        }
+    } else {
+        return
+    }
+    return
+}
+
+text(local) NameRater_Text_CritiqueWhichMonNickname {
+    "Which POKéMON's nickname should\n"
+	"I critique?"
+}
+
+text(local) NameRater_Text_ThatIsMerelyAnEgg {
+    "Now, now.\n"
+	"That is merely an EGG!"
+}
+
+text(local) NameRater_Text_FineNameSuggestBetterOne {
+    "Hmmm… {STR_VAR_1}, is it? That is\n"
+	"quite a fine name you bestowed.\p"
+	"But! What say you, if I were to\n"
+	"suggest a slightly better name?"
+}
+
+text(local) NameRater_Text_WhatShallNewNameBe {
+    "Ah, good. Then, what shall the new\n"
+	"nickname be?"
+}
+
+text(local) NameRater_Text_MonShallBeKnownAsName {
+    "Done! From now on, this POKéMON\n"
+	"shall be known as {STR_VAR_1}!\p"
+	"It is a better name than before!\n"
+	"How fortunate for you!"
+}
+
+text(local) NameRater_Text_NameNoDifferentYetSuperior {
+    "Done! From now on, this POKéMON\n"
+	"shall be known as {STR_VAR_1}!\p"
+	"It looks no different from before,\n"
+	"and yet, this is vastly superior!\p"
+	"How fortunate for you!"
+}
+
+script Common_EventScript_Pokeman_MoveDeleter {
+    msgbox(MoveDeleter_Text_WhichMonShouldForget)
+	special(ChoosePartyMon)
+	waitstate
+	if(var(VAR_0x8004) != 255) {
+        special(IsSelectedMonEgg)
+        if(var(VAR_RESULT) == TRUE) {
+            msgbox(MoveDeleter_Text_EggCantForgetMoves, MSGBOX_DEFAULT)
+            return
+        }
+        special(GetNumMovesSelectedMonHas)
+        if(var(VAR_RESULT) == 1) {
+            special(BufferMoveDeleterNicknameAndMove)
+	        msgbox(MoveDeleter_Text_MonOnlyKnowsOneMove, MSGBOX_DEFAULT)
+            return
+        }
+        do {
+            msgbox(MoveDeleter_Text_WhichMoveShouldBeForgotten, MSGBOX_DEFAULT)
+            fadescreen(FADE_TO_BLACK)
+            special(MoveDeleterChooseMoveToForget)
+            fadescreen(FADE_FROM_BLACK)
+        } while(var(VAR_0x8005) == MAX_MON_MOVES)
+        special(BufferMoveDeleterNicknameAndMove)
+	    msgbox(MoveDeleter_Text_MonsMoveShouldBeForgotten, MSGBOX_YESNO)
+        switch(var(VAR_RESULT)) {
+            case YES:
+                // special(IsLastMonThatKnowsSurf)
+                // if(var(VAR_RESULT) == TRUE){
+                //     goto_if_eq LilycoveCity_MoveDeletersHouse_EventScript_LastMonWithSurf
+                // }
+                special(MoveDeleterForgetMove)
+                playfanfare(MUS_MOVE_DELETED)
+                waitfanfare
+                msgbox(MoveDeleter_Text_MonHasForgottenMove, MSGBOX_DEFAULT)
+                return
+            case NO:
+                return
+        }
+    } else {
+        return
+    }
+}
+
+text(local) MoveDeleter_Text_WhichMonShouldForget {
+    "Which POKéMON should forget a move?"
+}
+
+text(local) MoveDeleter_Text_EggCantForgetMoves {
+    "What?\nNo EGG should know any moves."
+}
+
+text(local) MoveDeleter_Text_MonOnlyKnowsOneMove {
+    "{STR_VAR_1} knows only one move\nso it can't be forgotten…"
+}
+
+text(local) MoveDeleter_Text_WhichMoveShouldBeForgotten {
+    "Which move should be forgotten?"
+}
+
+text(local) MoveDeleter_Text_MonsMoveShouldBeForgotten {
+    "Hm! {STR_VAR_1}'s {STR_VAR_2}?\nThat move should be forgotten?"
+}
+
+text(local) MoveDeleter_Text_MonHasForgottenMove {
+    "It worked to perfection!\p"
+	"{STR_VAR_1} has forgotten\n"
+	"{STR_VAR_2} completely."
+}
+
+script Common_EventScript_Pokeman_MoveRelearner {
+    msgbox(MoveRelearner_Text_TutorWhichMon, MSGBOX_DEFAULT)
+	special(ChooseMonForMoveRelearner)
+	waitstate
+	if(var(VAR_0x8004) == 255) { //Mon selection canceled
+        return
+    }
+	special(IsSelectedMonEgg)
+	if(var(VAR_RESULT) == TRUE) { //Selected Mon is an egg
+        msgbox(MoveRelearner_Text_CantTeachEgg, MSGBOX_DEFAULT)
+        goto(Common_EventScript_Pokeman_MoveRelearner)
+    }
+	if(var(VAR_0x8005) == 0) { //There's no moves to teach selected mon
+	    msgbox(MoveRelearner_Text_DontHaveMoveToTeachPokemon, MSGBOX_DEFAULT)
+        goto(Common_EventScript_Pokeman_MoveRelearner)
+    }
+	msgbox(MoveRelearner_Text_TeachWhichMove, MSGBOX_DEFAULT)
+	special(TeachMoveRelearnerMove)
+	waitstate
+	if(var(VAR_0x8004) == 0) {
+        return
+    }
+	//msgbox(MoveRelearner_Text_HandedOverHeartScale, MSGBOX_DEFAULT)
+    return
+}
+
+text(local) MoveRelearner_Text_TutorWhichMon {
+    "Which POKéMON needs tutoring?"
+}
+
+text(local) MoveRelearner_Text_CantTeachEgg {
+    "Hunh? There isn't a single move that\n"
+	"I can teach an EGG."
+}
+
+text(local) MoveRelearner_Text_DontHaveMoveToTeachPokemon {
+    "Sorry…\p"
+	"It doesn't appear as if I have any move\n"
+	"I can teach that POKéMON."
+}
+
+text(local) MoveRelearner_Text_TeachWhichMove {
+    "Which move should I teach?"
+}

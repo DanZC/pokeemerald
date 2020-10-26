@@ -459,8 +459,15 @@ void PlayCryInternal(u16 species, s8 pan, s8 volume, u8 priority, u8 mode)
     SetPokemonCryChorus(chorus);
     SetPokemonCryPriority(priority);
 
-    species--;
-    gMPlay_PokemonCry = SetPokemonCryTone(v0 ? &gCryTable2[species] : &gCryTable[species]);
+    if(species != 0) 
+    {
+        species--;
+        gMPlay_PokemonCry = SetPokemonCryTone(v0 ? &gCryTable2[species] : &gCryTable[species]);
+    } 
+    else 
+    {
+        gMPlay_PokemonCry = SetPokemonCryTone(v0 ? &gCryTable2[31] : &gCryTable[31]);
+    }
 }
 
 bool8 IsCryFinished(void)
