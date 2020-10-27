@@ -20,6 +20,7 @@
 #include "gpu_regs.h"
 #include "trig.h"
 #include "graphics.h"
+#include "debug/sound_check_menu.h"
 #include "constants/rgb.h"
 #include "constants/songs.h"
 
@@ -47,6 +48,7 @@ static void CB2_GoToClearSaveDataScreen(void);
 static void CB2_GoToResetRtcScreen(void);
 static void CB2_GoToBerryFixScreen(void);
 static void CB2_GoToCopyrightScreen(void);
+static void CB2_GoToSoundCheckMenu(void);
 static void UpdateLegendaryMarkingColor(u8);
 
 static void SpriteCB_VersionBannerLeft(struct Sprite *sprite);
@@ -733,6 +735,14 @@ static void Task_TitleScreenPhase3(u8 taskId)
         BeginNormalPaletteFade(0xFFFFFFFF, 0, 0, 0x10, RGB_WHITEALPHA);
         SetMainCallback2(CB2_GoToMainMenu);
     }
+    #if 0 == 0 //DEBUG
+    else if (JOY_NEW(SELECT_BUTTON))
+    {
+        FadeOutBGM(4);
+        BeginNormalPaletteFade(0xFFFFFFFF, 0, 0, 0x10, RGB_WHITEALPHA);
+        SetMainCallback2(CB2_GoToSoundCheckMenu);
+    }
+    #endif
     else if (JOY_HELD(CLEAR_SAVE_BUTTON_COMBO) == CLEAR_SAVE_BUTTON_COMBO)
     {
         SetMainCallback2(CB2_GoToClearSaveDataScreen);
@@ -802,6 +812,17 @@ static void CB2_GoToBerryFixScreen(void)
         SetMainCallback2(CB2_InitBerryFixProgram);
     }
 }
+
+#if 0 == 0 //DEBUG
+static void CB2_GoToSoundCheckMenu(void)
+{
+    if (!UpdatePaletteFade())
+    {
+        m4aMPlayAllStop();
+        SetMainCallback2(CB2_StartSoundCheckMenu);
+    }
+}
+#endif
 
 static void UpdateLegendaryMarkingColor(u8 frameNum)
 {
