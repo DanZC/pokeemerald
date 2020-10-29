@@ -9,6 +9,8 @@
 #include "constants/map_types.h"
 #include "constants/rgb.h"
 
+#if 0 //DNS
+
   /*******************************************************/
  /*********    Day and Night Configuration     **********/
 /********************************************************
@@ -611,3 +613,5 @@ static bool8 IsLightActive()
         return TRUE;
     return FALSE;
 }
+
+#endif //DNS

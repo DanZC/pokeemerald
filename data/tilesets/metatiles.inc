@@ -565,3 +565,10 @@ gMetatiles_Outside::
 	.align 1
 gMetatileAttributes_Outside::
 	.incbin "data/tilesets/primary/outside/metatile_attributes.bin"
+	.align 1
+gMetatiles_Mariburg::
+	.incbin "data/tilesets/secondary/mariburg/metatiles.bin"
+
+	.align 1
+gMetatileAttributes_Mariburg::
+	.incbin "data/tilesets/secondary/mariburg/metatile_attributes.bin"

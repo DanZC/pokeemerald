@@ -49,7 +49,9 @@
 #include "util.h"
 #include "wild_encounter.h"
 #include "window.h"
+#if 0 //DNS
 #include "dns.h"
+#endif //DNS
 #include "constants/abilities.h"
 #include "constants/battle_config.h"
 #include "constants/battle_move_effects.h"
@@ -1718,7 +1720,9 @@ void BattleMainCB2(void)
     RunTextPrinters();
     UpdatePaletteFade();
     RunTasks();
+    #if 0 //DNS
     DnsApplyFilters();
+    #endif
 
     if (JOY_HELD(B_BUTTON) && gBattleTypeFlags & BATTLE_TYPE_RECORDED && sub_8186450())
     {

@@ -4414,10 +4414,10 @@
     {
       "id": "LAYOUT_TEST_MAP",
       "name": "TestMap_Layout",
-      "width": 24,
+      "width": 28,
       "height": 30,
       "primary_tileset": "gTileset_Outside",
-      "secondary_tileset": "gTileset_Petalburg",
+      "secondary_tileset": "gTileset_Mariburg",
       "border_filepath": "data/layouts/TestMap/border.bin",
       "blockdata_filepath": "data/layouts/TestMap/map.bin"
     },
@@ -4430,6 +4430,16 @@
       "secondary_tileset": "gTileset_PokemonCenter",
       "border_filepath": "data/layouts/TestMap_PokemonCenter_1F/border.bin",
       "blockdata_filepath": "data/layouts/TestMap_PokemonCenter_1F/map.bin"
+    },
+    {
+      "id": "LAYOUT_TEST_MAP2",
+      "name": "TestMap2_Layout",
+      "width": 30,
+      "height": 40,
+      "primary_tileset": "gTileset_Outside",
+      "secondary_tileset": "gTileset_Mariburg",
+      "border_filepath": "data/layouts/TestMap2/border.bin",
+      "blockdata_filepath": "data/layouts/TestMap2/map.bin"
     }
   ]
 }

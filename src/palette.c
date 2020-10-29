@@ -4,7 +4,9 @@
 #include "decompress.h"
 #include "gpu_regs.h"
 #include "task.h"
+#if 0 //DNS
 #include "dns.h"
+#endif
 #include "constants/rgb.h"
 
 enum
@@ -105,7 +107,11 @@ void TransferPlttBuffer(void)
     {
         void *src = gPlttBufferFaded;
         void *dest = (void *)PLTT;
+        #if 0 //DNS
         DnsTransferPlttBuffer(src, dest);  //Does 16b Dma Transfer
+        #else 
+        DmaCopy16(3, src, dest, PLTT_SIZE);
+        #endif //DNS
         sPlttBufferTransferPending = 0;
         if (gPaletteFade.mode == HARDWARE_FADE && gPaletteFade.active)
             UpdateBlendRegisters();
@@ -191,7 +197,11 @@ bool8 BeginNormalPaletteFade(u32 selectedPalettes, s8 delay, u8 startY, u8 targe
 
         temp = gPaletteFade.bufferTransferDisabled;
         gPaletteFade.bufferTransferDisabled = 0;
+        #if 0 //DNS
         TransferPlttBuffer();   //Fix DNS flickering
+        #else
+        CpuCopy32(gPlttBufferFaded, (void *)PLTT, PLTT_SIZE);
+        #endif
         sPlttBufferTransferPending = 0;
         if (gPaletteFade.mode == HARDWARE_FADE && gPaletteFade.active)
             UpdateBlendRegisters();

@@ -1749,3 +1749,23 @@ gTilesetPalettes_Outside::
 	.align 2
 gTilesetTiles_Outside::
 	.incbin "data/tilesets/primary/outside/tiles.4bpp.lz"
+
+	.align 2
+gTilesetPalettes_Mariburg::
+	.incbin "data/tilesets/secondary/mariburg/palettes/00.gbapal"
+	.incbin "data/tilesets/secondary/mariburg/palettes/01.gbapal"
+	.incbin "data/tilesets/secondary/mariburg/palettes/02.gbapal"
+	.incbin "data/tilesets/secondary/mariburg/palettes/03.gbapal"
+	.incbin "data/tilesets/secondary/mariburg/palettes/04.gbapal"
+	.incbin "data/tilesets/secondary/mariburg/palettes/05.gbapal"
+	.incbin "data/tilesets/secondary/mariburg/palettes/06.gbapal"
+	.incbin "data/tilesets/secondary/mariburg/palettes/07.gbapal"
+	.incbin "data/tilesets/secondary/mariburg/palettes/08.gbapal"
+	.incbin "data/tilesets/secondary/mariburg/palettes/09.gbapal"
+	.incbin "data/tilesets/secondary/mariburg/palettes/10.gbapal"
+	.incbin "data/tilesets/secondary/mariburg/palettes/11.gbapal"
+	.incbin "data/tilesets/secondary/mariburg/palettes/12.gbapal"
+
+	.align 2
+gTilesetTiles_Mariburg::
+	.incbin "data/tilesets/secondary/mariburg/tiles.4bpp.lz"

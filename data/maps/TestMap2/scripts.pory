@@ -1,0 +1,7 @@
+mapscripts TestMap2_MapScripts {}
+
+script TestMap2_EventScript_ManTrainer {
+    trainerbattle_single(TRAINER_TYRON, "I will not lose.", "I lost!")
+	msgbox("I hate you.", MSGBOX_AUTOCLOSE)
+	end
+}

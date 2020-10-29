@@ -68,7 +68,9 @@
 #include "constants/species.h"
 #include "constants/trainer_hill.h"
 #include "constants/weather.h"
+#if 0 //DNS
 #include "dns.h"
+#endif
 
 #define PLAYER_TRADING_STATE_IDLE 0x80
 #define PLAYER_TRADING_STATE_BUSY 0x81
@@ -1447,7 +1449,9 @@ void CB1_Overworld(void)
 
 static void OverworldBasic(void)
 {
+    #if 0 //DNS
     DnsApplyFilters();
+    #endif //DNS
     ScriptContext2_RunScript();
     RunTasks();
     AnimateSprites();
