@@ -4415,7 +4415,7 @@
       "id": "LAYOUT_TEST_MAP",
       "name": "TestMap_Layout",
       "width": 28,
-      "height": 30,
+      "height": 32,
       "primary_tileset": "gTileset_Outside",
       "secondary_tileset": "gTileset_Mariburg",
       "border_filepath": "data/layouts/TestMap/border.bin",

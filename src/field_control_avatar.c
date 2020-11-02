@@ -15,6 +15,7 @@
 #include "field_screen_effect.h"
 #include "field_specials.h"
 #include "fldeff_misc.h"
+#include "global.h"
 #include "item_menu.h"
 #include "link.h"
 #include "match_call.h"
@@ -466,6 +467,11 @@ static const u8 *GetInteractedMetatileScript(struct MapPosition *position, u8 me
 
 static const u8 *GetInteractedWaterScript(struct MapPosition *unused1, u8 metatileBehavior, u8 direction)
 {
+    #if 0 == 0 //DEBUG
+    if (IsPlayerFacingSurfableFishableWater() == TRUE)
+        return EventScript_UseSurf;
+    else
+    #endif //DEBUG
     if (FlagGet(FLAG_BADGE05_GET) == TRUE && PartyHasMonWithSurf() == TRUE && IsPlayerFacingSurfableFishableWater() == TRUE)
         return EventScript_UseSurf;
 
