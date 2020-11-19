@@ -3,6 +3,7 @@ script EventScript_UseSurf {
     //if(var(VAR_RESULT) == PARTY_SIZE) {
     //    end
     //}
+    setvar(VAR_RESULT, 0)
 	bufferpartymonnick(0, VAR_RESULT)
 	setfieldeffectargument(0, VAR_RESULT)
 	lockall
@@ -13,5 +14,6 @@ script EventScript_UseSurf {
     }
 	msgbox(gText_PlayerUsedSurf, MSGBOX_DEFAULT)
 	dofieldeffect(FLDEFF_USE_SURF)
+    releaseall
     end
 }

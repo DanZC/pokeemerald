@@ -429,10 +429,10 @@ bool8 Task_ProcessSoundCheckMenuInput(u8 taskId)
     {
         gTasks[taskId].func = Task_InitSoundEffectTest;
     }
-    else if (gMain.newKeys & START_BUTTON)
-    {
-        gTasks[taskId].func = Task_InitCryTest;
-    }
+    //else if (gMain.newKeys & START_BUTTON)
+    //{
+    //    gTasks[taskId].func = Task_InitCryTest;
+    //}
     else if (gMain.newKeys & A_BUTTON)
     {
         if (gTasks[taskId].tWindowSelected != 0) // is playing?
