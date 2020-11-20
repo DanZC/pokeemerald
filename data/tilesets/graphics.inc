@@ -1769,3 +1769,11 @@ gTilesetPalettes_Mariburg::
 	.align 2
 gTilesetTiles_Mariburg::
 	.incbin "data/tilesets/secondary/mariburg/tiles.4bpp.lz"
+gTilesetPalOverride_General05::
+	.incbin "data/tilesets/primary/general/palettes/05_over.gbapal"
+gTilesetPalOverride_Outside05::
+	.incbin "data/tilesets/primary/outside/palettes/05_over.gbapal"
+gTilesetPalOverride_Outside06::
+	.incbin "data/tilesets/primary/outside/palettes/06_over.gbapal"
+gTilesetPalOverride_Mariburg07::
+	.incbin "data/tilesets/secondary/mariburg/palettes/07_over.gbapal"

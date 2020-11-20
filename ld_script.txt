@@ -332,6 +332,7 @@ SECTIONS {
         src/international_string_util.o(.text);
         src/dns.o(.text);
         src/debug/sound_check_menu.o(.text);
+        src/day_night.o(.text);
     } =0
 
     script_data :
@@ -696,6 +697,7 @@ SECTIONS {
         data/sound_data.o(.rodata);
         src/dns.o(.rodata);
         src/debug/sound_check_menu.o(.rodata);
+        src/day_night.o(.rodata);
     } =0
 
     song_data :
