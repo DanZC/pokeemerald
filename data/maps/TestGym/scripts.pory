@@ -1,0 +1,15 @@
+mapscripts TestGym_MapScripts {}
+
+script TestGym_EventScript_GymGuy {
+    lock
+    faceplayer
+    msgbox(format("Yo. What's goin' on? Step on the colored panels to change the weather."))
+    release
+    end
+}
+
+script TestGym_EventScript_ManTrainer {
+    trainerbattle_single(TRAINER_TYRON, "I will not lose.", "I lost!")
+	msgbox("I hate you.", MSGBOX_AUTOCLOSE)
+	end
+}

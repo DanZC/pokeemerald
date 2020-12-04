@@ -38,4 +38,4 @@ TestMap_EventScript_Sign2_Text_0:
 	.string "This is a gym sign.$"
 
 TestMap_EventScript_GymBlocker_Text_0:
-	.string "This gym is not ready yet.\nCome back later.$"
+	.string "This gym is now ready!$"

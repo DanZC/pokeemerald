@@ -572,3 +572,10 @@ gMetatiles_Mariburg::
 	.align 1
 gMetatileAttributes_Mariburg::
 	.incbin "data/tilesets/secondary/mariburg/metatile_attributes.bin"
+	.align 1
+gMetatiles_Costa::
+	.incbin "data/tilesets/secondary/costa/metatiles.bin"
+
+	.align 1
+gMetatileAttributes_Costa::
+	.incbin "data/tilesets/secondary/costa/metatile_attributes.bin"

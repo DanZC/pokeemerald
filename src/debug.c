@@ -393,7 +393,7 @@ static void DebugAction_Cancel(u8 taskId)
 
 void Debug_ShowFlagEditMenu(void)
 {
-    struct ListMenuTemplate menuTemplate;
+    //struct ListMenuTemplate menuTemplate;
     u8 windowId;
     u8 menuTaskId;
     u8 inputTaskId;
@@ -403,9 +403,9 @@ void Debug_ShowFlagEditMenu(void)
     DrawStdWindowFrame(windowId, FALSE);
 
     //create list menu
-    menuTemplate = sFlagListTemplate;
-    menuTemplate.windowId = windowId;
-    menuTaskId = ListMenuInit(&menuTemplate, 0, 0);
+    //menuTemplate = sFlagListTemplate;
+    //menuTemplate.windowId = windowId;
+    //menuTaskId = ListMenuInit(&menuTemplate, 0, 0);
 
     //draw
     Debug_DrawFlagEditMenu(windowId);
@@ -413,7 +413,7 @@ void Debug_ShowFlagEditMenu(void)
     //create input handler task
     inputTaskId = CreateTask(DebugTask_HandleMainMenuInput, 3);
     //gTasks[taskId].func = Task_DebugMenuProcessInput;
-    gTasks[inputTaskId].data[0] = menuTaskId;
+    //gTasks[inputTaskId].data[0] = menuTaskId;
     gTasks[inputTaskId].data[1] = windowId;
 }
 

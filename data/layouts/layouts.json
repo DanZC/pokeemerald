@@ -94,10 +94,10 @@
     {
       "id": "LAYOUT_LITTLEROOT_TOWN",
       "name": "LittlerootTown_Layout",
-      "width": 20,
-      "height": 20,
-      "primary_tileset": "gTileset_General",
-      "secondary_tileset": "gTileset_Petalburg",
+      "width": 38,
+      "height": 38,
+      "primary_tileset": "gTileset_Outside",
+      "secondary_tileset": "gTileset_Costa",
       "border_filepath": "data/layouts/LittlerootTown/border.bin",
       "blockdata_filepath": "data/layouts/LittlerootTown/map.bin"
     },
@@ -165,9 +165,9 @@
       "id": "LAYOUT_ROUTE101",
       "name": "Route101_Layout",
       "width": 20,
-      "height": 20,
-      "primary_tileset": "gTileset_General",
-      "secondary_tileset": "gTileset_Petalburg",
+      "height": 40,
+      "primary_tileset": "gTileset_Outside",
+      "secondary_tileset": "gTileset_Costa",
       "border_filepath": "data/layouts/Route101/border.bin",
       "blockdata_filepath": "data/layouts/Route101/map.bin"
     },
@@ -176,8 +176,8 @@
       "name": "Route102_Layout",
       "width": 50,
       "height": 20,
-      "primary_tileset": "gTileset_General",
-      "secondary_tileset": "gTileset_Petalburg",
+      "primary_tileset": "gTileset_Outside",
+      "secondary_tileset": "gTileset_Costa",
       "border_filepath": "data/layouts/Route102/border.bin",
       "blockdata_filepath": "data/layouts/Route102/map.bin"
     },
@@ -4415,7 +4415,7 @@
       "id": "LAYOUT_TEST_MAP",
       "name": "TestMap_Layout",
       "width": 28,
-      "height": 32,
+      "height": 34,
       "primary_tileset": "gTileset_Outside",
       "secondary_tileset": "gTileset_Mariburg",
       "border_filepath": "data/layouts/TestMap/border.bin",
@@ -4440,6 +4440,26 @@
       "secondary_tileset": "gTileset_Mariburg",
       "border_filepath": "data/layouts/TestMap2/border.bin",
       "blockdata_filepath": "data/layouts/TestMap2/map.bin"
+    },
+    {
+      "id": "LAYOUT_TEST_GYM",
+      "name": "TestGym_Layout",
+      "width": 25,
+      "height": 25,
+      "primary_tileset": "gTileset_Building",
+      "secondary_tileset": "gTileset_MossdeepGym",
+      "border_filepath": "data/layouts/TestGym/border.bin",
+      "blockdata_filepath": "data/layouts/TestGym/map.bin"
+    },
+    {
+      "id": "LAYOUT_TEST_MAP2_HOUSE1",
+      "name": "TestMap2_House1_Layout",
+      "width": 11,
+      "height": 9,
+      "primary_tileset": "gTileset_Building",
+      "secondary_tileset": "gTileset_GenericBuilding",
+      "border_filepath": "data/layouts/TestMap2_House1/border.bin",
+      "blockdata_filepath": "data/layouts/TestMap2_House1/map.bin"
     }
   ]
 }

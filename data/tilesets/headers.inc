@@ -929,3 +929,15 @@ gTileset_Mariburg::
 	.4byte gMetatileAttributes_Mariburg
 	.4byte NULL @ animation callback
 	.4byte gTilesetPalOverrides_Mariburg
+
+	.align 2
+gTileset_Costa::
+	.byte TRUE @ is compressed
+	.byte TRUE @ is secondary
+	.2byte 0
+	.4byte gTilesetTiles_Costa
+	.4byte gTilesetPalettes_Costa
+	.4byte gMetatiles_Costa
+	.4byte gMetatileAttributes_Costa
+	.4byte NULL
+	.4byte gTilesetPalOverrides_Costa

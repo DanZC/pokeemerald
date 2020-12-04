@@ -3,7 +3,7 @@
   "name": "TestMap2",
   "layout": "LAYOUT_TEST_MAP2",
   "music": "MUS_RG_VERMILLION",
-  "region_map_section": "MAPSEC_ONE_ISLAND",
+  "region_map_section": "MAPSEC_LITTLEROOT_TOWN",
   "requires_flash": false,
   "weather": "WEATHER_NONE",
   "map_type": "MAP_TYPE_CITY",
@@ -22,8 +22,8 @@
   "object_events": [
     {
       "graphics_id": "OBJ_EVENT_GFX_MAN_1",
-      "x": 6,
-      "y": 17,
+      "x": 22,
+      "y": 9,
       "elevation": 3,
       "movement_type": "MOVEMENT_TYPE_LOOK_AROUND",
       "movement_range_x": 3,
@@ -35,7 +35,13 @@
     }
   ],
   "warp_events": [
-
+    {
+      "x": 11,
+      "y": 20,
+      "elevation": 0,
+      "dest_map": "MAP_TEST_MAP2_HOUSE1",
+      "dest_warp_id": 0
+    }
   ],
   "coord_events": [
 

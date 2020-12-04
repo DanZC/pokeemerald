@@ -21,7 +21,7 @@ script TestMap_EventScript_Sign2 {
 script TestMap_EventScript_GymBlocker {
     lock
     faceplayer
-    msgbox("This gym is not ready yet.\nCome back later.")
+    msgbox("This gym is now ready!")
     release
     end
 }

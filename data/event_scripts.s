@@ -1069,3 +1069,7 @@ Common_EventScript_LegendaryFlewAway:: @ 8273776
 	.include "data/maps/TestMap_PokemonCenter_1F/scripts.inc"
 
 	.include "data/maps/TestMap2/scripts.inc"
+
+	.include "data/maps/TestGym/scripts.inc"
+
+	.include "data/maps/TestMap2_House1/scripts.inc"

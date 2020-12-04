@@ -1777,3 +1777,30 @@ gTilesetPalOverride_Outside06::
 	.incbin "data/tilesets/primary/outside/palettes/06_over.gbapal"
 gTilesetPalOverride_Mariburg07::
 	.incbin "data/tilesets/secondary/mariburg/palettes/07_over.gbapal"
+
+	.align 2
+gTilesetPalettes_Costa::
+	.incbin "data/tilesets/secondary/costa/palettes/00.gbapal"
+	.incbin "data/tilesets/secondary/costa/palettes/01.gbapal"
+	.incbin "data/tilesets/secondary/costa/palettes/02.gbapal"
+	.incbin "data/tilesets/secondary/costa/palettes/03.gbapal"
+	.incbin "data/tilesets/secondary/costa/palettes/04.gbapal"
+	.incbin "data/tilesets/secondary/costa/palettes/05.gbapal"
+	.incbin "data/tilesets/secondary/costa/palettes/06.gbapal"
+	.incbin "data/tilesets/secondary/costa/palettes/07.gbapal"
+	.incbin "data/tilesets/secondary/costa/palettes/08.gbapal"
+	.incbin "data/tilesets/secondary/costa/palettes/09.gbapal"
+	.incbin "data/tilesets/secondary/costa/palettes/10.gbapal"
+	.incbin "data/tilesets/secondary/costa/palettes/11.gbapal"
+	.incbin "data/tilesets/secondary/costa/palettes/12.gbapal"
+
+	.align 2
+gTilesetTiles_Costa::
+	.incbin "data/tilesets/secondary/costa/tiles.4bpp.lz"
+
+gTilesetPalOverride_Costa07::
+	.incbin "data/tilesets/secondary/costa/palettes/07_over.gbapal"
+gTilesetPalOverride_Costa08::
+	.incbin "data/tilesets/secondary/costa/palettes/08_over.gbapal"
+gTilesetPalOverride_Costa09::
+	.incbin "data/tilesets/secondary/costa/palettes/09_over.gbapal"
